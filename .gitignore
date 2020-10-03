@@ -1,0 +1,17 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IntelliJ IOEA
+.idea
+*.iml
+out
+gen
+
+# envs
+.env
+.venv
+
+# shady_secrets
+settings.cfg
