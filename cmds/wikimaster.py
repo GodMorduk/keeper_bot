@@ -37,7 +37,7 @@ class WikiMasterCog(commands.Cog):
     @commands.has_role(constants.wiki_registrar_role)
     @commands.guild_only()
     async def wiki_register(self, ctx, username, password):
-        result = mw.create_wiki_account(username, password)
+        result = await mw.create_wiki_account(username, password)
         if result is True:
             await ctx.send("Аккаунт на вики успешно создан.")
         else:
@@ -48,7 +48,7 @@ class WikiMasterCog(commands.Cog):
     @commands.has_role(constants.wiki_registrar_role)
     @commands.guild_only()
     async def wiki_ban(self, ctx, username, reason):
-        result = mw.ban_wiki_account(username, reason)
+        result = await mw.ban_wiki_account(username, reason)
         if result is True:
             await ctx.send("Аккаунт на вики успешно забанен.")
         else:
@@ -59,7 +59,7 @@ class WikiMasterCog(commands.Cog):
     @commands.has_role(constants.wiki_registrar_role)
     @commands.guild_only()
     async def wiki_unban(self, ctx, username, reason):
-        result = mw.unban_wiki_account(username, reason)
+        result = await mw.unban_wiki_account(username, reason)
         if result is True:
             await ctx.send("Аккаунт на вики успешно разбанен.")
         else:

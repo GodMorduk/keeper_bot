@@ -2,6 +2,7 @@ from discord.ext import commands
 
 from constants import token
 from utility.config_handler import initialize_config
+from utility.mediawiki_handler import mediawiki_login
 
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
@@ -16,5 +17,10 @@ bot = commands.Bot(command_prefix="!")
 if __name__ == '__main__':
     for extension in initial_extensions:
         bot.load_extension(extension)
+
+@bot.event
+async def on_ready():
+    await mediawiki_login()
+    print("Хранитель Лимба запущен и готов к работе.")
 
 bot.run(token)

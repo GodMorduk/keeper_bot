@@ -62,7 +62,8 @@ def get_all_characters_links(discord_id):
 
 def get_character_link(character):
     query = Player.select().where(Player.character == character)
-    return [player.wiki_link for player in query]
+    for player in query:
+        return player.wiki_link
 
 
 def get_all_characters_raw(discord_id):
@@ -92,13 +93,14 @@ def unban_character(character):
 
 
 def ban_player_status(discord_id):
-    query = Player.select().where(Player.discord_id == discord_id & Player.banned == 1).execute()
+    query = Player.select().where((Player.discord_id == discord_id) & (Player.banned == 1)).execute()
     return [player.character for player in query]
 
 
 def ban_character_status(character):
     query = Player.select().where(Player.character == character).execute()
-    return [player.banned for player in query]
+    for player in query:
+        return player.banned
 
 
 def ban_full_list():

@@ -1,22 +1,23 @@
-import requests
+import aiohttp
+from aiohttp import web
 
 from utility.config_handler import get_config_value
 
-s = requests.Session()
+s = aiohttp.ClientSession()
 category = "MediaWiki"
 
 wiki_url = "https://wiki.ariadna.su/"
 api_url = "https://wiki.ariadna.su/api.php"
 
 
-def create_a_token(token_type=None):
+async def create_a_token(token_type=None):
     if token_type is None:
         token_params = {'action': "query", 'meta': "tokens", 'format': "json"}
     else:
         token_params = {'action': "query", 'meta': "tokens", 'type': token_type, 'format': "json"}
 
-    token_request = s.get(url=api_url, params=token_params)
-    token_data = token_request.json()
+    token_request = await s.get(url=api_url, params=token_params)
+    token_data = await token_request.json()
 
     if token_type is None:
         return token_data['query']['tokens']['csrftoken']
@@ -25,29 +26,29 @@ def create_a_token(token_type=None):
         return token_data['query']['tokens'][token_type]
 
 
-def proceed_request_and_return_as_data(params, output=True):
-    creation_request = s.post(api_url, data=params)
+async def proceed_request_and_return_as_data(params, output=True):
+    creation_request = await s.post(api_url, data=params)
+    fixed = await creation_request.json()
     if output:
-        return creation_request.json()
+        return fixed
     else:
         pass
 
 
-login_token = create_a_token("login")
+async def mediawiki_login():
+    login_token = await create_a_token("login")
+    params_login = {
+        'action': "login",
+        'lgname': get_config_value(category, "login"),
+        'lgpassword': get_config_value(category, "password"),
+        'lgtoken': login_token,
+        'format': "json"
+    }
+    await proceed_request_and_return_as_data(params_login, False)
 
-params_login = {
-    'action': "login",
-    'lgname': get_config_value(category, "login"),
-    'lgpassword': get_config_value(category, "password"),
-    'lgtoken': login_token,
-    'format': "json"
-}
 
-login_request = proceed_request_and_return_as_data(params_login, False)
-
-
-def create_wiki_account(username, password):
-    creation_token = create_a_token(token_type="createaccount")
+async def create_wiki_account(username, password):
+    creation_token = await create_a_token(token_type="createaccount")
 
     creation_params = {
         'action': "createaccount",
@@ -59,7 +60,7 @@ def create_wiki_account(username, password):
         'format': "json"
     }
 
-    creation_data = proceed_request_and_return_as_data(creation_params)
+    creation_data = await proceed_request_and_return_as_data(creation_params)
 
     if creation_data['createaccount']['status'] == "FAIL":
         return creation_data['createaccount']['message']
@@ -67,8 +68,8 @@ def create_wiki_account(username, password):
         return True
 
 
-def ban_wiki_account(username, reason):
-    ban_token = create_a_token()
+async def ban_wiki_account(username, reason):
+    ban_token = await create_a_token()
 
     ban_params = {
         "action": "block",
@@ -79,7 +80,7 @@ def ban_wiki_account(username, reason):
         "format": "json"
     }
 
-    ban_data = proceed_request_and_return_as_data(ban_params)
+    ban_data = await proceed_request_and_return_as_data(ban_params)
 
     if list(ban_data.keys())[0] == "error":
         return ban_data['error']['info']
@@ -87,8 +88,8 @@ def ban_wiki_account(username, reason):
         return True
 
 
-def unban_wiki_account(username, reason):
-    unban_token = create_a_token()
+async def unban_wiki_account(username, reason):
+    unban_token = await create_a_token()
 
     unban_params = {
         "action": "unblock",
@@ -98,7 +99,7 @@ def unban_wiki_account(username, reason):
         "format": "json"
     }
 
-    unban_data = proceed_request_and_return_as_data(unban_params)
+    unban_data = await proceed_request_and_return_as_data(unban_params)
 
     if list(unban_data.keys())[0] == "error":
         return unban_data['error']['info']

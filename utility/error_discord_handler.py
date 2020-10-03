@@ -30,7 +30,7 @@ class DiscordErrorHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        print(error)  # beware, это логирует все ошибки в консоль
+        # print(error) выводит все ошибки в консоль
         if isinstance(error, commands.errors.PrivateMessageOnly):
             await ctx.send("Это не личные сообщения. ТАКОЕ я готов обсуждать только там.")
         elif isinstance(error, commands.errors.MissingRequiredArgument):

@@ -53,14 +53,25 @@ class GameMasterCog(commands.Cog):
                               "команда, затем имя персонажа, затем новый пароль.\n**Пример:**  `!судо-пароль John "
                               "qwerty123`\n",
                         inline=False)
+        embed.add_field(name="!банлист",
+                        value="**Описание:** выводит всех забаненных.\n**Формат:** команда, без аргументов. "
+                              "\n**Пример:**  `!банлист qwerty123`\n",
+                        inline=False)
         await ctx.send(embed=embed)
 
     @commands.command(name="зарегистрировать")
     @commands.has_role(registrar_role)
     @commands.guild_only()
     async def register(self, ctx, character, password, user: User, wiki_link):
-        db.add_new_player(character, password, user.id, wiki_link)
-        await ctx.send("Персонаж успешно зарегистрирован!")
+        if len(character) > 15:
+            await ctx.send("Имя персонажа длиннее 15 символов. Не надо так много. Отмена.")
+        elif len(password) > 15:
+            await ctx.send("Пароль длинее 15 символов. Куда вам столько? Отмена регистрации.")
+        elif len(wiki_link) > 99:
+            await ctx.send("Ссылка на вики слишком большая. Этого вообще быть не должно, напишите администрации.")
+        else:
+            db.add_new_player(character, password, user.id, wiki_link)
+            await ctx.send("Персонаж успешно зарегистрирован!")
 
     @commands.command(name="удалить")
     @commands.guild_only()
@@ -70,11 +81,8 @@ class GameMasterCog(commands.Cog):
             db.remove_existing_character(subject)
             await ctx.send("Персонаж успешно удален.")
         elif type == "игрока":
-            try:
-                player = await commands.UserConverter().convert(ctx, str(subject))
-                db.remove_every_character(player.id)
-            except commands.UserNotFound:
-                db.remove_every_character(subject)
+            player = await commands.UserConverter().convert(ctx, str(subject))
+            db.remove_every_character(player.id)
             await ctx.send("Персонажи успешно удалены.")
 
     @commands.command(name="дамп")
@@ -99,11 +107,8 @@ class GameMasterCog(commands.Cog):
             db.ban_character(subject)
             await ctx.send("Персонаж успешно забанен.")
         elif type == "игрока":
-            try:
-                player = await commands.UserConverter().convert(ctx, str(subject))
-                db.ban_player(player.id)
-            except commands.UserNotFound:
-                db.ban_player(subject)
+            player = await commands.UserConverter().convert(ctx, str(subject))
+            db.ban_player(player.id)
             await ctx.send("Персонажи этого негодяя успешно забанены.")
 
     @commands.command(name="разбанить")
@@ -114,11 +119,8 @@ class GameMasterCog(commands.Cog):
             db.unban_character(subject)
             await ctx.send("Персонаж успешно разбанен. Прощен. Временно.")
         elif type == "игрока":
-            try:
-                player = await commands.UserConverter().convert(ctx, str(subject))
-                db.unban_player(player.id)
-            except commands.UserNotFound:
-                db.unban_player(subject)
+            player = await commands.UserConverter().convert(ctx, str(subject))
+            db.unban_player(player.id)
             await ctx.send("Персонажи успешно разбанены. Амнистия!")
 
     @commands.command(name="проверить")
@@ -127,14 +129,23 @@ class GameMasterCog(commands.Cog):
     async def check(self, ctx, type, subject):
         if type == "персонажа":
             info = db.ban_character_status(subject)
-            await ctx.send(info)
+            if info is False:
+                await ctx.send("Нет, он не забанен.")
+            else:
+                await ctx.seghhnd("Да, он в бане. Надежно и крепко.")
         elif type == "игрока":
-            try:
-                player = await commands.UserConverter().convert(ctx, str(subject))
-                info = db.ban_player_status(player.id)
-            except commands.UserNotFound:
-                info = db.ban_player_status(subject)
-            await ctx.send(info)
+            player = await commands.UserConverter().convert(ctx, str(subject))
+            info = db.ban_player_status(player.id)
+            if not info:
+                await ctx.send("У этого игрока нет забаненных персонажей, все в норме.")
+            else:
+                output = ""
+                for character in info:
+                    if info.index(character) == (len(info) - 1):
+                        output += (str(character))
+                    else:
+                        output += (str(character) + ", ")
+                await ctx.send("У этого игрока забанены следующие персонажи: " + output)
 
     @commands.command(name="судо-пароль")
     @commands.guild_only()
@@ -142,6 +153,22 @@ class GameMasterCog(commands.Cog):
     async def sudo_password_change(self, ctx, character, password):
         db.set_new_password(character, password)
         await ctx.send("Новый пароль задан.")
+
+    @commands.command(name="банлист")
+    @commands.guild_only()
+    @commands.has_role(registrar_role)
+    async def ban_list(self, ctx):
+        ban_list = db.ban_full_list()
+        if ban_list:
+            output = ""
+            for character in ban_list:
+                if ban_list.index(character) == (len(ban_list) - 1):
+                    output += (str(character))
+                else:
+                    output += (str(character) + ", ")
+            await ctx.send(output)
+        else:
+            await ctx.send("В бане пусто. И такое бывает.")
 
 
 def setup(bot):
