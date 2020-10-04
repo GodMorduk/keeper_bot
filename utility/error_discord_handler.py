@@ -1,6 +1,5 @@
 from discord import Embed
 from discord.ext import commands
-
 import constants
 
 
@@ -30,8 +29,12 @@ class DiscordErrorHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        # print(error) выводит все ошибки в консоль
-        if isinstance(error, commands.errors.PrivateMessageOnly):
+        print(error)  # в консоль занести
+        if str(error).endswith("Cannot send an empty message"): # потому что там ошибка bad request и лучше смотреть
+            await ctx.send("Пусто. Не могу ничего отправить.")
+        elif "Duplicate entry" in str(error):
+            await ctx.send("Этот персонаж уже есть в базе данных.")
+        elif isinstance(error, commands.errors.PrivateMessageOnly):
             await ctx.send("Это не личные сообщения. ТАКОЕ я готов обсуждать только там.")
         elif isinstance(error, commands.errors.MissingRequiredArgument):
             await ctx.send("Недостаточно аргументов. Проверь правильность команды.")

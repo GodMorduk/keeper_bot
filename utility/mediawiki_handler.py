@@ -74,7 +74,7 @@ async def ban_wiki_account(username, reason):
     ban_params = {
         "action": "block",
         "user": username,
-        "expiry": "Never",
+        "expiry": "never",
         "reason": reason,
         "token": ban_token,
         "format": "json"

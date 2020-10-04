@@ -31,8 +31,8 @@ class GameMasterCog(commands.Cog):
                               'через юзернейм (не ник), слап, id) игрока.\n**Пример:**  `!удалить игрока @John`\n',
                         inline=False)
         embed.add_field(name="!дамп",
-                        value="**Описание:** Выводит всю инфу обо всех персонажах игрока. Доступ только по "
-                              "id.\n**Формат:** команда, id игрока. \n**Пример:**  `!дамп 123412341234123412`\n",
+                        value="**Описание:** Выводит всю инфу обо всех персонажах игрока. id.\n**Формат:** команда, "
+                              "слап, id или юзернейм игрока. \n**Пример:**  `!дамп 123412341234123412`\n",
                         inline=False)
         embed.add_field(name="!забанить",
                         value='**Описание:** банит (но не удаляет) игрока в базе данных (не в игре и не в '
@@ -88,8 +88,8 @@ class GameMasterCog(commands.Cog):
     @commands.command(name="дамп")
     @commands.guild_only()
     @commands.has_role(registrar_role)
-    async def dump(self, ctx, discord_id):
-        rows = db.get_all_characters_raw(discord_id)
+    async def dump(self, ctx, user: User):
+        rows = db.get_all_characters_raw(user.id)
         if rows:
             output = "```"
             for row in rows:
@@ -97,7 +97,7 @@ class GameMasterCog(commands.Cog):
             output += "```"
             await ctx.send(output)
         else:
-            await ctx.send("Это не то, с чем я могу работать. Мне нужен discord_id.")
+            await ctx.send("Пусто. Скорее всего, на этого игрока пока ничего нет или что-то не так вбито.")
 
     @commands.command(name="забанить")
     @commands.guild_only()
@@ -129,9 +129,12 @@ class GameMasterCog(commands.Cog):
     async def check(self, ctx, type, subject):
         if type == "персонажа":
             info = db.ban_character_status(subject)
-            if info is False:
+            print(info)
+            if info is None:
+                await ctx.send("У меня нет информации по этому персонажу. Возможно, его вообще нет.")
+            elif info is False:
                 await ctx.send("Нет, он не забанен.")
-            else:
+            elif info is True:
                 await ctx.send("Да, он в бане. Надежно и крепко.")
         elif type == "игрока":
             player = await commands.UserConverter().convert(ctx, str(subject))

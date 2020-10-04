@@ -16,7 +16,7 @@ class BaseModel(pw.Model):
 
 
 class Player(BaseModel):
-    character = pw.CharField(max_length=15)
+    character = pw.CharField(max_length=15, unique=True)
     password = pw.CharField(max_length=15)
     discord_id = pw.CharField(max_length=18)
     wiki_link = pw.CharField(max_length=99)
@@ -28,7 +28,7 @@ class Player(BaseModel):
 
 # заготовка на будущее, пока просто пустая бд
 class WikiUser(BaseModel):
-    wiki_account = pw.CharField(max_length=50)
+    wiki_account = pw.CharField(max_length=50, unique=True)
     discord_id = pw.CharField(max_length=99)
 
     class Meta:

@@ -2,7 +2,7 @@ import glob
 import os
 import pathlib
 
-from discord import User, Embed
+from discord import User, Embed, File
 from discord.ext import commands
 
 import constants
@@ -17,7 +17,6 @@ class PlayerCog(commands.Cog):
         self.bot = bot
 
     @commands.command(name='персиваль')
-    @commands.guild_only()
     async def help_for_players(self, ctx):
         embed = Embed()
         embed.title = "Обычные команды Персиваля"
@@ -41,13 +40,17 @@ class PlayerCog(commands.Cog):
                         value="**Описание:** позволяет сменить пароль. Работает только в личке.\n**Формат:** команда, "
                               "затем имя персонажа, затем новый пароль.\n**Пример:**  `!пароль John q1w2e3`",
                         inline=False)
+        embed.add_field(name="!лаунчер",
+                        value="**Описание:** скидывает вам лаунчер в формате exe. Jar доступен у администрации. "
+                              "Работает только в личке.\n**Формат:** команда\n**Пример:**  `!лаунчер`",
+                        inline=False)
         embed.add_field(name="!залитьскин",
                         value="**Описание:** позволяет залить скин. Работает только в личке.\n**Формат:** команда, "
                               "затем имя персонажа, затем постфикс (не обязателен). Если постфикс есть, "
                               "имя файла будет представлять из себя \"имя персонажа + _ + постфикс\", если его нет, "
                               "то просто имя персонажа.\n**Пример:**  `!залитьскин John armor`",
                         inline=False)
-        embed.add_field(name="!вывестискины",
+        embed.add_field(name="!узнатьскины",
                         value="**Описание:** выводит имена всех ваших замечательных скинов на определенном персонаже "
                               "(включая основной и с постфиксами). Работает только в личке.\n**Формат:** команда, "
                               "затем имя персонажа.\n**Пример:**  `!узнатьскины John`",
@@ -66,11 +69,13 @@ class PlayerCog(commands.Cog):
 
     @commands.command(name="персонажи")
     @commands.guild_only()
-    async def characters(self, ctx, user: User):
+    async def characters(self, ctx, user: User = None):
+        if not user:
+            user = ctx.message.author
         list_of_characters = db.get_all_characters_normal(user.id)
         output = ""
         for character in list_of_characters:
-            if list_of_characters.index(character) == (len(list_of_characters)-1):
+            if list_of_characters.index(character) == (len(list_of_characters) - 1):
                 output += (str(character))
             else:
                 output += (str(character) + ", ")
@@ -85,7 +90,9 @@ class PlayerCog(commands.Cog):
     @commands.command(name="викиигрока")
     @commands.guild_only()
     @commands.cooldown(1, 15.0, commands.BucketType.default)
-    async def wiki_players(self, ctx, user: User):
+    async def wiki_players(self, ctx, user: User = None):
+        if not user:
+            user = ctx.message.author
         list_of_characters = db.get_all_characters_links(user.id)
         output = ""
         for link in list_of_characters:
@@ -101,6 +108,15 @@ class PlayerCog(commands.Cog):
             await ctx.send("Новый пароль задан.")
         else:
             await ctx.send("У тебя нет такого персонажа. Что-то тут не так.")
+
+    @commands.command(name="лаунчер")
+    @commands.dm_only()
+    async def launcher(self, ctx):
+        characters = db.get_all_characters_normal(ctx.message.author.id)
+        if characters:
+            await ctx.send("Держи. Не потеряй.", file=File(f"{constants.dir_launcher}Launcher.exe"))
+        else:
+            await ctx.send("Не вижу у тебя персонажей. Зачем тебе лаунчер?")
 
     @commands.command(name="залитьскин")
     @commands.dm_only()
@@ -128,7 +144,7 @@ class PlayerCog(commands.Cog):
         else:
             await ctx.send("У тебя нет такого персонажа. Ц-ц-ц.")
 
-    @commands.command(name="вывестискины")
+    @commands.command(name="узнатьскины")
     @commands.dm_only()
     async def skins_lists(self, ctx, character):
         available_characters = db.get_all_characters_normal(ctx.message.author.id)
