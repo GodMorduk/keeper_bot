@@ -132,7 +132,7 @@ class GameMasterCog(commands.Cog):
             if info is False:
                 await ctx.send("Нет, он не забанен.")
             else:
-                await ctx.seghhnd("Да, он в бане. Надежно и крепко.")
+                await ctx.send("Да, он в бане. Надежно и крепко.")
         elif type == "игрока":
             player = await commands.UserConverter().convert(ctx, str(subject))
             info = db.ban_player_status(player.id)

@@ -1,6 +1,5 @@
 from discord.ext import commands
 
-from constants import token
 from utility.config_handler import initialize_config
 from utility.mediawiki_handler import mediawiki_login
 
@@ -8,6 +7,8 @@ from utility.mediawiki_handler import mediawiki_login
 # logging.basicConfig(level=logging.DEBUG)
 
 initialize_config()
+# очень плохой временный фикс
+from constants import token
 
 initial_extensions = ['cmds.gamemaster', 'cmds.wikimaster', 'cmds.player',
                       'utility.error_discord_handler']
