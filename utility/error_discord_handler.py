@@ -29,9 +29,13 @@ class DiscordErrorHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        print(error)  # в консоль занести
+        print("Caught error!" + str(error))  # в консоль занести
         if str(error).endswith("Cannot send an empty message"): # потому что там ошибка bad request и лучше смотреть
             await ctx.send("Пусто. Не могу ничего отправить.")
+        elif "Please choose a more unique password" in str(error):
+            await ctx.send("Этот пароль слишком не-уникальный.")
+        elif "No such user" in str(error):
+            await ctx.send("Такого пользователя не существует. Вообще.")
         elif "Duplicate entry" in str(error):
             await ctx.send("Этот персонаж уже есть в базе данных.")
         elif isinstance(error, commands.errors.PrivateMessageOnly):

@@ -10,5 +10,6 @@ client_category = "Client"
 dir_skins = get_config_value(client_category, "dir_skins")
 dir_launcher = get_config_value(client_category, "dir_launcher")
 link_skins = get_config_value(client_category, "link_skins")
+launcher_name = get_config_value(client_category, "launcher_name")
 
 color_codes = {"Error": 15158332, "Log": 3066993, "Info": 14793122}

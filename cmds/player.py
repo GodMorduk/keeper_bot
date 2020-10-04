@@ -55,20 +55,24 @@ class PlayerCog(commands.Cog):
                               "(включая основной и с постфиксами). Работает только в личке.\n**Формат:** команда, "
                               "затем имя персонажа.\n**Пример:**  `!узнатьскины John`",
                         inline=False)
+        embed.add_field(name="!получитьскины",
+                        value="**Описание:** позволяет получить все ссылки на все скины, для ленивых.\n**Формат:** "
+                              "команда, затем название скина, без постфикса - только имя персонажа.\n**Пример:** "
+                              "`!получитьскины John`",
+                        inline=False)
         embed.add_field(name="!получитьскин",
                         value="**Описание:** позволяет получить ссылку на скин, для ленивых.\n**Формат:** команда, "
                               "затем полное имя скина (с постфиксом если есть, одним словом).\n**Пример:**  "
                               "`!получитьскин John_armor`",
                         inline=False)
-        embed.add_field(name="!уничтожитьскины",
+        embed.add_field(name="!уничтожитьскин",
                         value="**Описание:** позволяет уничтожить скин безвозвратно.\n**Формат:** команда, "
                               "затем полное имя скина (с постфиксом если есть, одним словом).\n**Пример:**  "
-                              "`!уничтожитьскины John_armor`",
+                              "`!уничтожитьскин John_armor`",
                         inline=False)
         await ctx.send(embed=embed)
 
     @commands.command(name="персонажи")
-    @commands.guild_only()
     async def characters(self, ctx, user: User = None):
         if not user:
             user = ctx.message.author
@@ -82,13 +86,11 @@ class PlayerCog(commands.Cog):
         await ctx.send(output)
 
     @commands.command(name="вики")
-    @commands.guild_only()
     async def wiki_char(self, ctx, character):
         output = db.get_character_link(character)
         await ctx.send(output)
 
     @commands.command(name="викиигрока")
-    @commands.guild_only()
     @commands.cooldown(1, 15.0, commands.BucketType.default)
     async def wiki_players(self, ctx, user: User = None):
         if not user:
@@ -114,13 +116,14 @@ class PlayerCog(commands.Cog):
     async def launcher(self, ctx):
         characters = db.get_all_characters_normal(ctx.message.author.id)
         if characters:
-            await ctx.send("Держи. Не потеряй.", file=File(f"{constants.dir_launcher}Launcher.exe"))
+            await ctx.send("Держи. Не потеряй.", file=File(fp=f"{constants.dir_launcher}Launcher.exe",
+                                                           filename=constants.launcher_name))
         else:
             await ctx.send("Не вижу у тебя персонажей. Зачем тебе лаунчер?")
 
     @commands.command(name="залитьскин")
     @commands.dm_only()
-    async def skins_creation(self, ctx, character, postfix=""):
+    async def skin_uploading(self, ctx, character, postfix=""):
         available_characters = db.get_all_characters_normal(ctx.message.author.id)
         if character in available_characters:
             if postfix != "":
@@ -146,7 +149,7 @@ class PlayerCog(commands.Cog):
 
     @commands.command(name="узнатьскины")
     @commands.dm_only()
-    async def skins_lists(self, ctx, character):
+    async def list_skins(self, ctx, character):
         available_characters = db.get_all_characters_normal(ctx.message.author.id)
         if character in available_characters:
             names = [pathlib.Path(x).stem for x in glob.glob(f"{constants.dir_skins}{character}*")]
@@ -160,9 +163,28 @@ class PlayerCog(commands.Cog):
         else:
             await ctx.send("Я не могу сказать тебе о скинах персонажей, которых у тебя нет. ")
 
+    @commands.command(name="получитьскины")
+    @commands.dm_only()
+    async def get_skins_links(self, ctx, character):
+        available_characters = db.get_all_characters_normal(ctx.message.author.id)
+        if character in available_characters:
+            names = [pathlib.Path(x).stem for x in glob.glob(f"{constants.dir_skins}{character}*")]
+            if names:
+                output = "Держи:\n"
+                for character in names:
+                    if names.index(character) == (len(names) - 1):
+                        output += f"{constants.link_skins}{character}.png"
+                    else:
+                        output += f"{constants.link_skins}{character}.png\n"
+                await ctx.send(output)
+            else:
+                await ctx.send("Не могу ничего найти. Возможно, скинов нет?")
+        else:
+            await ctx.send("Я не выдаю скины персонажей, которых у тебя нет.")
+
     @commands.command(name="получитьскин")
     @commands.dm_only()
-    async def skins_get_link(self, ctx, full_skin_name):
+    async def get_skin_link(self, ctx, full_skin_name):
         available_characters = db.get_all_characters_normal(ctx.message.author.id)
         for character in available_characters:
             if str(full_skin_name).startswith(character):

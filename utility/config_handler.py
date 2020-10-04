@@ -22,9 +22,12 @@ def create_config(path):
     config.set("Client", "dir_skins", "path to skins folder")
     config.set("Client", "dir_launcher", "path to launcher file")
     config.set("Client", "link_skins", "http link to skins website (and folder, if any)")
+    config.set("Client", "launcher_name", "renamed launcher name")
     config.add_section("MediaWiki")
     config.set("MediaWiki", "login", "bot login")
     config.set("MediaWiki", "password", "bot password")
+    config.set("MediaWiki", "change_password_script_path", "direct absolute path to file")
+    config.set("MediaWiki", "rollback_script_path", "direct absolute path to file")
 
     with open(path, "w") as config_file:
         config.write(config_file)

@@ -1,13 +1,18 @@
 import aiohttp
 from aiohttp import web
+import subprocess
 
 from utility.config_handler import get_config_value
+from shlex import quote as shlex_quote
 
 s = aiohttp.ClientSession()
 category = "MediaWiki"
 
 wiki_url = "https://wiki.ariadna.su/"
 api_url = "https://wiki.ariadna.su/api.php"
+
+rollback_path = get_config_value(category, "rollback_script_path")
+change_password_path = get_config_value(category, "change_password_script_path")
 
 
 async def create_a_token(token_type=None):
@@ -105,3 +110,25 @@ async def unban_wiki_account(username, reason):
         return unban_data['error']['info']
     else:
         return True
+
+
+async def change_password(username, password):
+    result = subprocess.run(
+        f"php {change_password_path} --user={shlex_quote(username)} --password={shlex_quote(password)}",
+        shell=True,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
+    return str(result.stdout).rstrip("\n")
+
+
+async def rollback(username):
+    result = subprocess.run(
+        f'php {rollback_path} --user={shlex_quote(username)} --summary=="Откат Персивалем"',
+        shell=True,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
+    return str(result.stdout).rstrip("\n")
