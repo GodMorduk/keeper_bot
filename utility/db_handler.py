@@ -35,104 +35,99 @@ class WikiUser(BaseModel):
         table_name = 'wiki_users'
 
 
+def mysql_connection_decorator(func):
+    def ensure_mysql_connect(*args, **kwargs):
+        db.connect(reuse_if_open=True)
+        func_execution = func(*args, **kwargs)
+        db.close()
+        return func_execution
+    return ensure_mysql_connect
+
+
 with db:
     db.create_tables([Player, WikiUser])
 
 
+@mysql_connection_decorator
 def add_new_player(character, password, discord_id, wiki_link):
-    db.connect(reuse_if_open=True)
     Player.create(character=character, password=password, discord_id=discord_id, wiki_link=wiki_link)
-    db.close()
 
 
+@mysql_connection_decorator
 def remove_existing_character(character):
-    db.connect(reuse_if_open=True)
     Player.delete().where(Player.character == character).execute()
-    db.close()
 
+
+@mysql_connection_decorator
 def remove_every_character(discord_id):
-    db.connect(reuse_if_open=True)
     Player.delete().where(Player.discord_id == discord_id).execute()
-    db.close()
 
 
+@mysql_connection_decorator
 def get_all_characters_normal(discord_id):
-    db.connect(reuse_if_open=True)
     query = Player.select().where(Player.discord_id == discord_id)
-    db.close()
     return [player.character for player in query]
 
 
+@mysql_connection_decorator
 def get_all_characters_links(discord_id):
-    db.connect(reuse_if_open=True)
     query = Player.select().where(Player.discord_id == discord_id)
-    db.close()
     return [player.wiki_link for player in query]
 
 
+@mysql_connection_decorator
 def get_character_link(character):
-    db.connect(reuse_if_open=True)
     query = Player.select().where(Player.character == character)
-    db.close()
     for player in query:
         return player.wiki_link
 
 
+@mysql_connection_decorator
 def get_all_characters_raw(discord_id):
-    db.connect(reuse_if_open=True)
     query = Player.select().dicts().where(Player.discord_id == discord_id)
-    db.close()
     return query
 
 
+@mysql_connection_decorator
 def set_new_password(character, password):
-    db.connect(reuse_if_open=True)
     Player.update(password=password).where(Player.character == character).execute()
-    db.close()
 
 
 # баны-бананы
+@mysql_connection_decorator
 def ban_player(discord_id):
-    db.connect(reuse_if_open=True)
     Player.update(banned=1).where(Player.discord_id == discord_id).execute()
-    db.close()
 
 
+@mysql_connection_decorator
 def ban_character(character):
-    db.connect(reuse_if_open=True)
     Player.update(banned=1).where(Player.character == character).execute()
-    db.close()
 
 
+@mysql_connection_decorator
 def unban_player(discord_id):
-    db.connect(reuse_if_open=True)
     Player.update(banned=0).where(Player.discord_id == discord_id).execute()
-    db.close()
 
 
+@mysql_connection_decorator
 def unban_character(character):
-    db.connect(reuse_if_open=True)
     Player.update(banned=0).where(Player.character == character).execute()
-    db.close()
 
 
+@mysql_connection_decorator
 def ban_player_status(discord_id):
-    db.connect(reuse_if_open=True)
     query = Player.select().where((Player.discord_id == discord_id) & (Player.banned == 1)).execute()
-    db.close()
     return [player.character for player in query]
 
 
+@mysql_connection_decorator
 def ban_character_status(character):
-    db.connect(reuse_if_open=True)
     query = Player.select().where(Player.character == character).execute()
-    db.close()
     for player in query:
         return player.banned
 
 
+@mysql_connection_decorator
 def ban_full_list():
-    db.connect(reuse_if_open=True)
     query = Player.select().where(Player.banned == 1).execute()
-    db.close()
     return [player.character for player in query]
