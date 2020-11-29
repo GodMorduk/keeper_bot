@@ -32,9 +32,9 @@ class PlayerCog(commands.Cog):
                         value="**Описание:** дает вики-ссылки на всех персонажей игрока.\n**Формат:** команда, "
                               "затем аналогично пункту выше.\n**Пример:**  `!вики @John`",
                         inline=False)
-        embed.add_field(name="!вики",
+        embed.add_field(name="!википерса",
                         value="**Описание:** дает вики-ссылку на конкретного персонажа. Имя персонажа должно быть на "
-                              "латиннице.\n**Формат:** команда, затем имя персонажа\n**Пример:**  `!вики John`",
+                              "латиннице.\n**Формат:** команда, затем имя персонажа\n**Пример:**  `!википерса John`",
                         inline=False)
         embed.add_field(name="!пароль",
                         value="**Описание:** позволяет сменить пароль. Работает только в личке.\n**Формат:** команда, "
@@ -85,7 +85,7 @@ class PlayerCog(commands.Cog):
                 output += (str(character) + ", ")
         await ctx.send(output)
 
-    @commands.command(name="вики")
+    @commands.command(name="википерса")
     async def wiki_char(self, ctx, character):
         output = db.get_character_link(character)
         await ctx.send(output)
