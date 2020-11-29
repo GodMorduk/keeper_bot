@@ -1,6 +1,5 @@
 from discord import Embed
 from discord.ext import commands
-import subprocess
 
 import constants
 import utility.mediawiki_handler as mw
@@ -34,7 +33,7 @@ class WikiMasterCog(commands.Cog):
                         inline=False)
         embed.add_field(name="!вики-пароль",
                         value="**Описание:** меняет пароль пользователю.\n**Формат:** команда, имя аккаунта для "
-                              "смены, пароль.\n**Пример:**  `!вики-пароль John извинился`",
+                              "смены, пароль.\n**Пример:**  `!вики-пароль John qwerty123`",
                         inline=False)
         embed.add_field(name="!вики-откат",
                         value="**Описание:** откатывает последние правки пользователя на вики. Работает только на тех "

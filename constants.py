@@ -5,6 +5,7 @@ token = get_config_value(discord_category, "token")
 registrar_role = int(get_config_value(discord_category, "registrar_role_id"))
 log_channel = int(get_config_value(discord_category, "log_channel_id"))
 wiki_registrar_role = int(get_config_value(discord_category, "registrar_role_id"))
+owner_id = int(get_config_value(discord_category, "owner_id"))
 
 client_category = "Client"
 dir_skins = get_config_value(client_category, "dir_skins")

@@ -12,6 +12,7 @@ def create_config(path):
     config.set("Discord", "registrar_role_id", "enter id here")
     config.set("Discord", "wiki-registrar_role_id", "enter id here")
     config.set("Discord", "log_channel_id", "enter id here")
+    config.set("Discord", "owner_id", "enter owner id here")
     config.add_section("MySQL")
     config.set("MySQL", "Address", "localhost")
     config.set("MySQL", "Username", "db nickname")
