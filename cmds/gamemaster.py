@@ -3,7 +3,6 @@ from discord.ext import commands
 
 import constants
 import utility.db_handler as db
-from constants import registrar_role
 
 
 class GameMasterCog(commands.Cog):
@@ -11,7 +10,7 @@ class GameMasterCog(commands.Cog):
         self.bot = bot
 
     @commands.command(name='гейммастерская')
-    @commands.has_role(registrar_role)
+    @commands.has_any_role(constants.registrar_role, constants.admin_role)
     @commands.guild_only()
     async def help_for_moderation(self, ctx):
         embed = Embed()
@@ -60,7 +59,7 @@ class GameMasterCog(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="зарегистрировать")
-    @commands.has_role(registrar_role)
+    @commands.has_any_role(constants.registrar_role, constants.admin_role)
     @commands.guild_only()
     async def register(self, ctx, character, password, user: User, wiki_link):
         if len(character) > 15:
@@ -75,7 +74,7 @@ class GameMasterCog(commands.Cog):
 
     @commands.command(name="удалить")
     @commands.guild_only()
-    @commands.has_role(registrar_role)
+    @commands.has_any_role(constants.registrar_role, constants.admin_role)
     async def delete(self, ctx, type, subject):
         if type == "персонажа":
             db.remove_existing_character(subject)
@@ -87,7 +86,7 @@ class GameMasterCog(commands.Cog):
 
     @commands.command(name="дамп")
     @commands.guild_only()
-    @commands.has_role(registrar_role)
+    @commands.has_any_role(constants.registrar_role, constants.admin_role)
     async def dump(self, ctx, user: User):
         rows = db.get_all_characters_raw(user.id)
         if rows:
@@ -101,7 +100,7 @@ class GameMasterCog(commands.Cog):
 
     @commands.command(name="забанить")
     @commands.guild_only()
-    @commands.has_role(registrar_role)
+    @commands.has_any_role(constants.registrar_role, constants.admin_role)
     async def ban(self, ctx, type, subject):
         if type == "персонажа":
             db.ban_character(subject)
@@ -113,7 +112,7 @@ class GameMasterCog(commands.Cog):
 
     @commands.command(name="разбанить")
     @commands.guild_only()
-    @commands.has_role(registrar_role)
+    @commands.has_any_role(constants.registrar_role, constants.admin_role)
     async def unban(self, ctx, type, subject):
         if type == "персонажа":
             db.unban_character(subject)
@@ -125,7 +124,7 @@ class GameMasterCog(commands.Cog):
 
     @commands.command(name="проверить")
     @commands.guild_only()
-    @commands.has_role(registrar_role)
+    @commands.has_any_role(constants.registrar_role, constants.admin_role)
     async def check(self, ctx, type, subject):
         if type == "персонажа":
             info = db.ban_character_status(subject)
@@ -152,14 +151,14 @@ class GameMasterCog(commands.Cog):
 
     @commands.command(name="судо-пароль")
     @commands.guild_only()
-    @commands.has_role(registrar_role)
+    @commands.has_any_role(constants.registrar_role, constants.admin_role)
     async def sudo_password_change(self, ctx, character, password):
         db.set_new_password(character, password)
         await ctx.send("Новый пароль задан.")
 
     @commands.command(name="банлист")
     @commands.guild_only()
-    @commands.has_role(registrar_role)
+    @commands.has_any_role(constants.registrar_role, constants.admin_role)
     async def ban_list(self, ctx):
         ban_list = db.ban_full_list()
         if ban_list:

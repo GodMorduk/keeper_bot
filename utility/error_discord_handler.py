@@ -1,5 +1,6 @@
 from discord import Embed
 from discord.ext import commands
+
 import constants
 
 
@@ -29,31 +30,40 @@ class DiscordErrorHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        print("Caught error!" + str(error))  # в консоль занести
-        if str(error).endswith("Cannot send an empty message"): # потому что там ошибка bad request и лучше смотреть
-            await ctx.send("Пусто. Не могу ничего отправить.")
-        elif "Please choose a more unique password" in str(error):
-            await ctx.send("Этот пароль слишком не-уникальный.")
-        elif "No such user" in str(error):
-            await ctx.send("Такого пользователя не существует. Вообще.")
-        elif "Duplicate entry" in str(error):
-            await ctx.send("Этот персонаж уже есть в базе данных.")
-        elif isinstance(error, commands.errors.PrivateMessageOnly):
-            await ctx.send("Это не личные сообщения. ТАКОЕ я готов обсуждать только там.")
-        elif isinstance(error, commands.errors.MissingRequiredArgument):
-            await ctx.send("Недостаточно аргументов. Проверь правильность команды.")
-        elif isinstance(error, commands.errors.UserNotFound):
-            await ctx.send("Я не могу найти этого пользователя. Ты точно все правильно вбил?")
-        elif isinstance(error, commands.errors.MissingRole):
-            required_role_id = int(str(error).split()[1])
-            if required_role_id == constants.registrar_role:
-                await ctx.send('Ты даже не регистратор! Крайне дерзко с твоей стороны.')
-            elif required_role_id == constants.wiki_registrar_role:
-                await ctx.send('Ты не вики-мастер. Меня так просто не проведешь.')
-        elif isinstance(error, commands.errors.NoPrivateMessage):
-            await ctx.send('Я таким не занимаюсь в личных сообщениях. Только на сервере.')
-        elif isinstance(error, commands.errors.CommandOnCooldown):
-            await ctx.send('Воу-воу. Полегче. Эта команда пока на кулдауне.')
+        if isinstance(error, commands.errors.CommandNotFound):
+            return  # из за префикса !, оверлап с командами карл-бота и зачем нам это логировать
+        else:
+            print("Caught error! " + str(error))  # в консоль занести
+            if constants.log_enable:
+                await self.print_error_in_embed(ctx, is_error=True, body=error)
+            if str(error).endswith("Cannot send an empty message"):  # потому что там ошибка bad request
+                await ctx.send("Не могу ничего отправить. Сообщение пустое по какой-то причине.")
+            elif "Please choose a more unique password" in str(error):
+                await ctx.send("Этот пароль слишком не-уникальный.")
+            elif "No such user" in str(error):
+                await ctx.send("Такого пользователя не существует. Вообще.")
+            elif "Duplicate entry" in str(error):
+                await ctx.send("Этот персонаж уже есть в базе данных.")
+            elif isinstance(error, commands.errors.PrivateMessageOnly):
+                await ctx.send("Это не личные сообщения. ТАКОЕ я готов обсуждать только там.")
+            elif isinstance(error, commands.errors.MissingRequiredArgument):
+                await ctx.send("Недостаточно аргументов. Проверь правильность команды.")
+            elif isinstance(error, commands.errors.UserNotFound):
+                await ctx.send("Я не могу найти этого пользователя. Ты точно все правильно вбил?")
+            elif isinstance(error, commands.errors.MissingAnyRole):
+                required_role_id = int(str(error.missing_roles[0]))
+                if required_role_id == constants.registrar_role:
+                    await ctx.send('Ты даже не регистратор! Крайне дерзко с твоей стороны.')
+                elif required_role_id == constants.wiki_registrar_role:
+                    await ctx.send('Ты не вики-мастер. Меня так просто не проведешь.')
+            elif isinstance(error, commands.errors.MissingRole):
+                required_role_id = int(str(error.missing_role))
+                if required_role_id == constants.admin_role:
+                    await ctx.send('Ты не админ! Тебе нельзя такие штуки!')
+            elif isinstance(error, commands.errors.NoPrivateMessage):
+                await ctx.send('Я таким не занимаюсь в личных сообщениях. Только на сервере.')
+            elif isinstance(error, commands.errors.CommandOnCooldown):
+                await ctx.send('Воу-воу. Полегче. Эта команда пока на кулдауне.')
 
 
 def setup(bot):

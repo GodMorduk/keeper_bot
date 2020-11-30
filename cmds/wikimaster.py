@@ -10,7 +10,7 @@ class WikiMasterCog(commands.Cog):
         self.bot = bot
 
     @commands.command(name='викимастерская')
-    @commands.has_role(constants.wiki_registrar_role)
+    @commands.has_any_role(constants.wiki_registrar_role, constants.admin_role)
     @commands.guild_only()
     async def help_for_moderation(self, ctx):
         embed = Embed()
@@ -46,7 +46,7 @@ class WikiMasterCog(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="вики-регистрация")
-    @commands.has_role(constants.wiki_registrar_role)
+    @commands.has_any_role(constants.wiki_registrar_role, constants.admin_role)
     @commands.guild_only()
     async def wiki_register(self, ctx, username, password):
         result = await mw.create_wiki_account(username, password)
@@ -57,7 +57,7 @@ class WikiMasterCog(commands.Cog):
                 "Аккаунт на вики создать не получилось. Сообщение от нашей милой MediaWiki:\n" + "```" + result + "```")
 
     @commands.command(name="вики-бан")
-    @commands.has_role(constants.wiki_registrar_role)
+    @commands.has_any_role(constants.wiki_registrar_role, constants.admin_role)
     @commands.guild_only()
     async def wiki_ban(self, ctx, username, reason):
         result = await mw.ban_wiki_account(username, reason)
@@ -68,7 +68,7 @@ class WikiMasterCog(commands.Cog):
                 "Аккаунт на вики забанить не получилось. Сообщение от нашей милой MediaWiki:\n" + "```" + result + "```")
 
     @commands.command(name="вики-разбан")
-    @commands.has_role(constants.wiki_registrar_role)
+    @commands.has_any_role(constants.wiki_registrar_role, constants.admin_role)
     @commands.guild_only()
     async def wiki_unban(self, ctx, username, reason):
         result = await mw.unban_wiki_account(username, reason)
@@ -79,7 +79,7 @@ class WikiMasterCog(commands.Cog):
                 "Аккаунт на вики разбанить не получилось. Сообщение от нашей милой MediaWiki:\n" + "```" + result + "```")
 
     @commands.command(name="вики-пароль")
-    @commands.has_role(constants.wiki_registrar_role)
+    @commands.has_any_role(constants.wiki_registrar_role, constants.admin_role)
     @commands.guild_only()
     async def wiki_password(self, ctx, username, password):
         result = await mw.change_password(username, password)
@@ -89,7 +89,7 @@ class WikiMasterCog(commands.Cog):
             await ctx.send("Что-то пошло не так. Сообщение от MediaWiki: " + "```" + result + "```")
 
     @commands.command(name="вики-откат")
-    @commands.has_role(constants.wiki_registrar_role)
+    @commands.has_any_role(constants.wiki_registrar_role, constants.admin_role)
     @commands.guild_only()
     async def wiki_rollback(self, ctx, username):
         result = await mw.rollback(username)
