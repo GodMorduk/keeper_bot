@@ -55,12 +55,14 @@ def add_new_player(character, password, discord_id, wiki_link):
 
 @mysql_connection_decorator
 def remove_existing_character(character):
-    Player.delete().where(Player.character == character).execute()
+    query = Player.delete().where(Player.character == character).execute()
+    return query
 
 
 @mysql_connection_decorator
 def remove_every_character(discord_id):
-    Player.delete().where(Player.discord_id == discord_id).execute()
+    query = Player.delete().where(Player.discord_id == discord_id).execute()
+    return query
 
 
 @mysql_connection_decorator
@@ -90,28 +92,33 @@ def get_all_characters_raw(discord_id):
 
 @mysql_connection_decorator
 def set_new_password(character, password):
-    Player.update(password=password).where(Player.character == character).execute()
+    query = Player.update(password=password).where(Player.character == character).execute()
+    return query
 
 
 # баны-бананы
 @mysql_connection_decorator
 def ban_player(discord_id):
-    Player.update(banned=1).where(Player.discord_id == discord_id).execute()
+    query = Player.update(banned=1).where(Player.discord_id == discord_id).execute()
+    return query
 
 
 @mysql_connection_decorator
 def ban_character(character):
-    Player.update(banned=1).where(Player.character == character).execute()
+    query = Player.update(banned=1).where(Player.character == character).execute()
+    return query
 
 
 @mysql_connection_decorator
 def unban_player(discord_id):
-    Player.update(banned=0).where(Player.discord_id == discord_id).execute()
+    query = Player.update(banned=0).where(Player.discord_id == discord_id).execute()
+    return query
 
 
 @mysql_connection_decorator
 def unban_character(character):
-    Player.update(banned=0).where(Player.character == character).execute()
+    query = Player.update(banned=0).where(Player.character == character).execute()
+    return query
 
 
 @mysql_connection_decorator
