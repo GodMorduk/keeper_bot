@@ -1,9 +1,9 @@
-import aiofiles
-import aiohttp
-
 import glob
 import os
 import pathlib
+
+import aiofiles
+import aiohttp
 
 import constants
 import handlers.db_handler as db
@@ -55,10 +55,9 @@ async def get_skins_links(ctx, character):
         if names:
             output = "Держи:\n"
             for character in names:
-                if names.index(character) == (len(names) - 1):
-                    output += f"{constants.link_skins}{character}.png"
-                else:
-                    output += f"{constants.link_skins}{character}.png\n"
+                output += f"{constants.link_skins}{character}.png"
+                if names.index(character) != (len(names) - 1):
+                    output += "\n"
             await ctx.send(output)
         else:
             await ctx.send("Не могу ничего найти. Возможно, скинов нет?")

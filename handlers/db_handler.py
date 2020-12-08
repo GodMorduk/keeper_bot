@@ -69,7 +69,7 @@ def remove_every_character(discord_id):
 
 @mysql_connection_decorator
 def get_all_characters_normal(discord_id):
-    query = Player.select().where(Player.discord_id == discord_id)
+    query = Player.select().where((Player.discord_id == discord_id) & (Player.banned == 0))
     return [player.character for player in query]
 
 
@@ -144,7 +144,7 @@ def ban_full_list():
 
 @mysql_connection_decorator
 def is_such_char(character):
-    query = Player.select().dicts().where(Player.character == character)
+    query = Player.select().dicts().where((Player.character == character))
     if query.exists():
         return True
     else:

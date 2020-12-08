@@ -26,6 +26,7 @@ if __name__ == '__main__':
         initialize_config()
 
     bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'), case_insensitive=True, intents=intents)
+    bot.remove_command('help')
     for extension in initial_extensions:
         bot.load_extension(extension)
 
