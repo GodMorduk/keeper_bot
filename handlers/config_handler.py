@@ -13,6 +13,7 @@ def create_config(path):
     config.set("Discord", "wiki-registrar_role_id", "enter id here")
     config.set("Discord", "admin_role_id", "enter admin group id")
     config.set("Discord", "owner_id", "enter owner id here")
+    config.set("Discord", "player_role_id", "enter player role id here")
     config.add_section("MySQL")
     config.set("MySQL", "Address", "localhost")
     config.set("MySQL", "Username", "db nickname")
@@ -25,6 +26,7 @@ def create_config(path):
     config.set("Client", "link_skins", "http link to skins website (and folder, if any)")
     config.set("Client", "launcher_name", "renamed launcher name")
     config.add_section("MediaWiki")
+    config.set("Mediawiki", "wiki_url", "enter wiki url, like https://wiki.example.com/")
     config.set("MediaWiki", "login", "bot login")
     config.set("MediaWiki", "password", "bot password")
     config.set("MediaWiki", "change_password_script_path", "direct absolute path to file")
@@ -43,7 +45,7 @@ def initialize_config():
         print("Я не нашел конфиг и создал стандартный. Я закроюсь, заполните его как надо и запускайте еще раз.")
         sys.exit(0)
     else:
-        print("Конфиг уже есть, пропускаю его создание.")
+        print("Этого вывода вообще не должно быть, но конфиг успешно загружен.")
 
 
 def get_config_value(category, value):

@@ -1,15 +1,15 @@
-import aiohttp
-from aiohttp import web
 import subprocess
-
-from utility.config_handler import get_config_value
 from shlex import quote as shlex_quote
+
+import aiohttp
+
+from handlers.config_handler import get_config_value
 
 s = aiohttp.ClientSession()
 category = "MediaWiki"
 
-wiki_url = "https://wiki.ariadna.su/"
-api_url = "https://wiki.ariadna.su/api.php"
+wiki_url = get_config_value(category, "wiki_url")
+api_url = wiki_url + "api.php"
 
 rollback_path = get_config_value(category, "rollback_script_path")
 change_password_path = get_config_value(category, "change_password_script_path")

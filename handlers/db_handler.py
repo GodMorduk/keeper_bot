@@ -1,6 +1,6 @@
 import peewee as pw
 
-from utility.config_handler import get_config_value
+from handlers.config_handler import get_config_value
 
 category = "MySQL"
 db = pw.MySQLDatabase(get_config_value(category, "db"),
@@ -41,6 +41,7 @@ def mysql_connection_decorator(func):
         func_execution = func(*args, **kwargs)
         db.close()
         return func_execution
+
     return ensure_mysql_connect
 
 
@@ -50,7 +51,8 @@ with db:
 
 @mysql_connection_decorator
 def add_new_player(character, password, discord_id, wiki_link):
-    Player.create(character=character, password=password, discord_id=discord_id, wiki_link=wiki_link)
+    query = Player.create(character=character, password=password, discord_id=discord_id, wiki_link=wiki_link)
+    return query
 
 
 @mysql_connection_decorator
@@ -138,3 +140,12 @@ def ban_character_status(character):
 def ban_full_list():
     query = Player.select().where(Player.banned == 1).execute()
     return [player.character for player in query]
+
+
+@mysql_connection_decorator
+def is_such_char(character):
+    query = Player.select().dicts().where(Player.character == character)
+    if query.exists():
+        return True
+    else:
+        return False

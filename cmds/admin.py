@@ -1,3 +1,4 @@
+from discord import Activity, ActivityType, Game
 from discord.ext import commands
 
 import constants
@@ -7,6 +8,21 @@ from bot import initial_extensions
 class AdminCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.has_role(constants.admin_role)
+    @commands.command(name="займись", hidden=True)
+    async def change_playing_status(self, ctx, what, subject):
+        if what == "игрой":
+            await self.bot.change_presence(activity=Game(name=subject))
+        # if what == "стримом":
+        #     await self.bot.change_presence(activity=ActivityType.streaming(name=subject, url=None))
+        if what == "послушай":
+            await self.bot.change_presence(activity=Activity(type=ActivityType.listening, name=subject))
+        if what == "посмотри":
+            await self.bot.change_presence(activity=Activity(type=ActivityType.watching, name=subject))
+        if what == "делом":
+            await self.bot.change_presence(activity=None)
+            await ctx.send("Занимаюсь делом, ладно")
 
     @commands.has_role(constants.admin_role)
     @commands.command(name='переключитьдебаг', hidden=True)

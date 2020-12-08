@@ -3,8 +3,11 @@ from discord.ext import commands
 
 import constants
 
+user_converter = commands.MemberConverter()
+role_converter = commands.RoleConverter()
 
-class DiscordErrorHandler(commands.Cog):
+
+class DiscordUtil(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -42,8 +45,6 @@ class DiscordErrorHandler(commands.Cog):
                 await ctx.send("Этот пароль слишком не-уникальный.")
             elif "No such user" in str(error):
                 await ctx.send("Такого пользователя не существует. Вообще.")
-            elif "Duplicate entry" in str(error):
-                await ctx.send("Этот персонаж уже есть в базе данных.")
             elif isinstance(error, commands.errors.PrivateMessageOnly):
                 await ctx.send("Это не личные сообщения. ТАКОЕ я готов обсуждать только там.")
             elif isinstance(error, commands.errors.MissingRequiredArgument):
@@ -67,4 +68,4 @@ class DiscordErrorHandler(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(DiscordErrorHandler(bot))
+    bot.add_cog(DiscordUtil(bot))

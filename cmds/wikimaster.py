@@ -2,7 +2,9 @@ from discord import Embed
 from discord.ext import commands
 
 import constants
-import utility.mediawiki_handler as mw
+import handlers.mediawiki_handler as mw
+import utility.interactive_util as inter
+from lines import *
 
 
 class WikiMasterCog(commands.Cog):
@@ -48,7 +50,23 @@ class WikiMasterCog(commands.Cog):
     @commands.command(name="вики-регистрация")
     @commands.has_any_role(constants.wiki_registrar_role, constants.admin_role)
     @commands.guild_only()
-    async def wiki_register(self, ctx, username, password):
+    @inter.exception_handler_decorator
+    async def wiki_register(self, ctx, *args):
+        username = None
+        password = None
+        try:
+            username = args[0][0]
+            password = args[0][1]
+        except IndexError:
+            pass
+        except AttributeError:
+            pass
+
+        if not username:
+            username = await inter.input_raw_text(self, ctx, wiki_user_tooltip)
+        if not password:
+            password = await inter.input_raw_text(self, ctx, wiki_password_tooltip)
+
         result = await mw.create_wiki_account(username, password)
         if result is True:
             await ctx.send("Аккаунт на вики успешно создан.")
@@ -59,7 +77,23 @@ class WikiMasterCog(commands.Cog):
     @commands.command(name="вики-бан")
     @commands.has_any_role(constants.wiki_registrar_role, constants.admin_role)
     @commands.guild_only()
-    async def wiki_ban(self, ctx, username, reason):
+    @inter.exception_handler_decorator
+    async def wiki_ban(self, ctx, *args):
+        username = None
+        reason = None
+        try:
+            username = args[0][0]
+            reason = args[0][1]
+        except IndexError:
+            pass
+        except AttributeError:
+            pass
+
+        if not username:
+            username = await inter.input_raw_text(self, ctx, wiki_user_tooltip)
+        if not reason:
+            reason = await inter.input_raw_text(self, ctx, wiki_reason_tooltip)
+
         result = await mw.ban_wiki_account(username, reason)
         if result is True:
             await ctx.send("Аккаунт на вики успешно забанен.")
@@ -70,7 +104,23 @@ class WikiMasterCog(commands.Cog):
     @commands.command(name="вики-разбан")
     @commands.has_any_role(constants.wiki_registrar_role, constants.admin_role)
     @commands.guild_only()
-    async def wiki_unban(self, ctx, username, reason):
+    @inter.exception_handler_decorator
+    async def wiki_unban(self, ctx, *args):
+        username = None
+        reason = None
+        try:
+            username = args[0][0]
+            reason = args[0][1]
+        except IndexError:
+            pass
+        except AttributeError:
+            pass
+
+        if not username:
+            username = await inter.input_raw_text(self, ctx, wiki_user_tooltip)
+        if not reason:
+            reason = await inter.input_raw_text(self, ctx, wiki_reason_tooltip)
+
         result = await mw.unban_wiki_account(username, reason)
         if result is True:
             await ctx.send("Аккаунт на вики успешно разбанен.")
@@ -81,7 +131,22 @@ class WikiMasterCog(commands.Cog):
     @commands.command(name="вики-пароль")
     @commands.has_any_role(constants.wiki_registrar_role, constants.admin_role)
     @commands.guild_only()
-    async def wiki_password(self, ctx, username, password):
+    @inter.exception_handler_decorator
+    async def wiki_password(self, ctx, *args):
+        username = None
+        password = None
+        try:
+            username = args[0][0]
+            password = args[0][1]
+        except IndexError:
+            pass
+        except AttributeError:
+            pass
+
+        if not username:
+            username = await inter.input_raw_text(self, ctx, wiki_user_tooltip)
+        if not password:
+            password = await inter.input_raw_text(self, ctx, wiki_password_tooltip)
         result = await mw.change_password(username, password)
         if result.startswith("Password set"):
             await ctx.send("Новый пароль задан. Все в порядке.")
@@ -91,7 +156,19 @@ class WikiMasterCog(commands.Cog):
     @commands.command(name="вики-откат")
     @commands.has_any_role(constants.wiki_registrar_role, constants.admin_role)
     @commands.guild_only()
-    async def wiki_rollback(self, ctx, username):
+    @inter.exception_handler_decorator
+    async def wiki_rollback(self, ctx, *args):
+        username = None
+        try:
+            username = args[0][0]
+        except IndexError:
+            pass
+        except AttributeError:
+            pass
+
+        if not username:
+            username = await inter.input_raw_text(self, ctx, wiki_user_tooltip)
+
         result = await mw.rollback(username)
         if result.startswith("Processing"):
             await ctx.send(

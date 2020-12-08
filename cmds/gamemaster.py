@@ -2,7 +2,30 @@ from discord import User, Embed
 from discord.ext import commands
 
 import constants
-import utility.db_handler as db
+import handlers.db_handler as db
+import utility.gamemaster_util as util
+import utility.interactive_util as inter
+from lines import *
+
+
+async def del_check_ban_unban(self, ctx, start_text, to_do_with_char, to_do_with_user, *args):
+    what = None
+    subject = None
+    try:
+        what = args[0][0]
+        subject = args[0][1]
+    except IndexError:
+        pass
+    except AttributeError:
+        pass
+
+    what = await inter.user_or_char(self, ctx, start_text, gm_int_what_error, what)
+    if what == "персонажа":
+        subject = await inter.check_char(self, ctx, gm_int_char_tooltip, gm_int_char_error, subject)
+        await to_do_with_char(ctx, subject)
+    elif what == "игрока":
+        subject = await inter.discord_user(self, ctx, gm_int_user_tooltip, gm_int_user_error, subject)
+        await to_do_with_user(ctx, subject)
 
 
 class GameMasterCog(commands.Cog):
@@ -19,33 +42,38 @@ class GameMasterCog(commands.Cog):
         embed.description = "Вводите с осторожностью, перепроверяйте команды и все такое. Непоправимого мало, " \
                             "а вот неприятного и так достаточно. "
         embed.add_field(name="!зарегистрировать",
-                        value="**Описание:** регистрирует нового персонажа. \n**Формат:** команда, имя персонажа ("
-                              "латинница с большой буквы), пароль, затем слап или id или юзернейм (не ник) игрока, "
+                        value="**Ввод без аргументов или с их нехваткой активирует интерактивный режим.** \n"
+                              "**Описание:** регистрирует нового персонажа. \n**Формат:** команда, имя персонажа ("
+                              "латинница с большой буквы), пароль, затем слап или id или юзернейм игрока, "
                               "и наконец прямая ссылка на вики \n**Пример:** `!зарегистрировать John qwerty @John "
                               "https://google.com`",
                         inline=False)
         embed.add_field(name="!удалить",
-                        value='**Описание:** удаляет персонажа либо игрока. Навсегда.\n**Формат:** команда, '
+                        value="**Ввод без аргументов или с их нехваткой активирует интерактивный режим.** \n"
+                              '**Описание:** удаляет персонажа либо игрока. Навсегда.\n**Формат:** команда, '
                               'слово "персонажа" или "игрока", затем соотв-но имя персонажа или имя (можно передать '
-                              'через юзернейм (не ник), слап, id) игрока.\n**Пример:**  `!удалить игрока @John`\n',
-                        inline=False)
-        embed.add_field(name="!дамп",
-                        value="**Описание:** Выводит всю инфу обо всех персонажах игрока. id.\n**Формат:** команда, "
-                              "слап, id или юзернейм игрока. \n**Пример:**  `!дамп 123412341234123412`\n",
+                              'через юзернейм, слап, id) игрока.\n**Пример:**  `!удалить игрока @John`\n',
                         inline=False)
         embed.add_field(name="!забанить",
-                        value='**Описание:** банит (но не удаляет) игрока в базе данных (не в игре и не в '
+                        value="**Ввод без аргументов или с их нехваткой активирует интерактивный режим.** \n"
+                              '**Описание:** банит (но не удаляет) игрока в базе данных (не в игре и не в '
                               'дискорде).\n**Формат:** аналогичный с командой "удалить".\n**Пример:**  `!забанить '
                               'персонажа John`\n',
                         inline=False)
         embed.add_field(name="!разбанить",
-                        value='**Описание:** разбанивает одного персонажа или всех персонажей игрока.\n**Формат:** '
+                        value="**Ввод без аргументов или с их нехваткой активирует интерактивный режим.** \n"
+                              '**Описание:** разбанивает одного персонажа или всех персонажей игрока.\n**Формат:** '
                               'аналогичный с командой "удалить"\n**Пример:**  `!разбанить игрока John"`\n',
                         inline=False)
         embed.add_field(name="!проверить",
-                        value="**Описание:** если спрашивают об игроке, выводит всех его забаненных персонажей, "
+                        value="**Ввод без аргументов или с их нехваткой активирует интерактивный режим.** \n"
+                              "**Описание:** если спрашивают об игроке, выводит всех его забаненных персонажей, "
                               "если о персонаже - пишет, забанен ли он.\n**Формат:** аналогичный с командой "
                               "'удалить'\n**Пример:**  `!проверить игрока John `\n",
+                        inline=False)
+        embed.add_field(name="!дамп",
+                        value="**Описание:** Выводит всю инфу обо всех персонажах игрока. id.\n**Формат:** команда, "
+                              "слап, id или юзернейм игрока. \n**Пример:**  `!дамп 123412341234123412`\n",
                         inline=False)
         embed.add_field(name="!судо-пароль",
                         value="**Описание:** меняет пароль на персонаже, даже если вы не его владелец.\n**Формат:** "
@@ -58,31 +86,65 @@ class GameMasterCog(commands.Cog):
                         inline=False)
         await ctx.send(embed=embed)
 
+    # Блок команды регистрации
+
     @commands.command(name="зарегистрировать")
     @commands.has_any_role(constants.registrar_role, constants.admin_role)
     @commands.guild_only()
-    async def register(self, ctx, character, password, user: User, wiki_link):
-        if len(character) > 15:
-            await ctx.send("Имя персонажа длиннее 15 символов. Не надо так много. Отмена.")
-        elif len(password) > 15:
-            await ctx.send("Пароль длинее 15 символов. Куда вам столько? Отмена регистрации.")
-        elif len(wiki_link) > 99:
-            await ctx.send("Ссылка на вики слишком большая. Этого вообще быть не должно, напишите администрации.")
-        else:
-            db.add_new_player(character, password, user.id, wiki_link)
-            await ctx.send("Персонаж успешно зарегистрирован!")
+    @inter.exception_handler_decorator
+    async def interactive_register(self, ctx, *args):
+
+        character = None
+        password = None
+        user = None
+        wiki_link = None
+
+        try:
+            character = args[0][0]
+            password = args[0][1]
+            user = args[0][2]
+            wiki_link = args[0][3]
+        except IndexError:
+            pass
+        except AttributeError:
+            pass
+
+        character = await inter.max_len(self, ctx, 15, gm_int_reg_char_tooltip, gm_int_reg_char_error, character)
+        password = await inter.max_len(self, ctx, 15, gm_int_reg_password_tooltip, gm_int_reg_password_error, password)
+        user = await inter.discord_user(self, ctx, gm_int_reg_user_tooltip, gm_int_reg_user_error, user)
+        wiki_link = await inter.max_len(self, ctx, 99, gm_int_reg_wiki_tooltip, gm_int_reg_user_tooltip, wiki_link)
+
+        await util.registration(ctx, character, password, user, wiki_link)
 
     @commands.command(name="удалить")
-    @commands.guild_only()
     @commands.has_any_role(constants.registrar_role, constants.admin_role)
-    async def delete(self, ctx, type, subject):
-        if type == "персонажа":
-            db.remove_existing_character(subject)
-            await ctx.send("Персонаж успешно удален.")
-        elif type == "игрока":
-            player = await commands.UserConverter().convert(ctx, str(subject))
-            db.remove_every_character(player.id)
-            await ctx.send("Персонажи успешно удалены.")
+    @commands.guild_only()
+    @inter.exception_handler_decorator
+    async def interactive_delete(self, ctx, *args):
+        await del_check_ban_unban(self, ctx, gm_int_del_what_tooltip, util.delete_char, util.delete_user, *args)
+
+    @commands.command(name="забанить")
+    @commands.has_any_role(constants.registrar_role, constants.admin_role)
+    @commands.guild_only()
+    @inter.exception_handler_decorator
+    async def interactive_ban(self, ctx, *args):
+        await del_check_ban_unban(self, ctx, gm_int_ban_what_tooltip, util.ban_char, util.ban_user, *args)
+
+    @commands.command(name="разбанить")
+    @commands.has_any_role(constants.registrar_role, constants.admin_role)
+    @commands.guild_only()
+    @inter.exception_handler_decorator
+    async def interactive_unban(self, ctx, *args):
+        await del_check_ban_unban(self, ctx, gm_int_unban_what_tooltip, util.unban_char, util.unban_user, *args)
+
+    @commands.command(name="проверить")
+    @commands.has_any_role(constants.registrar_role, constants.admin_role)
+    @commands.guild_only()
+    @inter.exception_handler_decorator
+    async def interactive_check(self, ctx, *args):
+        await del_check_ban_unban(self, ctx, gm_int_check_what_tooltip, util.check_char, util.check_user, *args)
+
+    # Неинтерактивные команды
 
     @commands.command(name="дамп")
     @commands.guild_only()
@@ -98,63 +160,15 @@ class GameMasterCog(commands.Cog):
         else:
             await ctx.send("Пусто. Скорее всего, на этого игрока пока ничего нет или что-то не так вбито.")
 
-    @commands.command(name="забанить")
-    @commands.guild_only()
-    @commands.has_any_role(constants.registrar_role, constants.admin_role)
-    async def ban(self, ctx, type, subject):
-        if type == "персонажа":
-            db.ban_character(subject)
-            await ctx.send("Персонаж успешно забанен.")
-        elif type == "игрока":
-            player = await commands.UserConverter().convert(ctx, str(subject))
-            db.ban_player(player.id)
-            await ctx.send("Персонажи этого негодяя успешно забанены.")
-
-    @commands.command(name="разбанить")
-    @commands.guild_only()
-    @commands.has_any_role(constants.registrar_role, constants.admin_role)
-    async def unban(self, ctx, type, subject):
-        if type == "персонажа":
-            db.unban_character(subject)
-            await ctx.send("Персонаж успешно разбанен. Прощен. Временно.")
-        elif type == "игрока":
-            player = await commands.UserConverter().convert(ctx, str(subject))
-            db.unban_player(player.id)
-            await ctx.send("Персонажи успешно разбанены. Амнистия!")
-
-    @commands.command(name="проверить")
-    @commands.guild_only()
-    @commands.has_any_role(constants.registrar_role, constants.admin_role)
-    async def check(self, ctx, type, subject):
-        if type == "персонажа":
-            info = db.ban_character_status(subject)
-            print(info)
-            if info is None:
-                await ctx.send("У меня нет информации по этому персонажу. Возможно, его вообще нет.")
-            elif info is False:
-                await ctx.send("Нет, он не забанен.")
-            elif info is True:
-                await ctx.send("Да, он в бане. Надежно и крепко.")
-        elif type == "игрока":
-            player = await commands.UserConverter().convert(ctx, str(subject))
-            info = db.ban_player_status(player.id)
-            if not info:
-                await ctx.send("У этого игрока нет забаненных персонажей, все в норме.")
-            else:
-                output = ""
-                for character in info:
-                    if info.index(character) == (len(info) - 1):
-                        output += (str(character))
-                    else:
-                        output += (str(character) + ", ")
-                await ctx.send("У этого игрока забанены следующие персонажи: " + output)
-
     @commands.command(name="судо-пароль")
     @commands.guild_only()
     @commands.has_any_role(constants.registrar_role, constants.admin_role)
     async def sudo_password_change(self, ctx, character, password):
-        db.set_new_password(character, password)
-        await ctx.send("Новый пароль задан.")
+        result = db.set_new_password(character, password)
+        if result == 0:
+            await ctx.send("Что-то не так. Может, персонаж неправильно указан?")
+        else:
+            await ctx.send("Новый пароль задан.")
 
     @commands.command(name="банлист")
     @commands.guild_only()

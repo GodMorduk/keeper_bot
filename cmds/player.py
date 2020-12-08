@@ -1,22 +1,18 @@
-import glob
-import os
-import pathlib
-
 from discord import User, Embed, File
 from discord.ext import commands
 
 import constants
-import utility.db_handler as db
-
-import aiohttp
-import aiofiles
+import handlers.db_handler as db
+import utility.interactive_util as inter
+import utility.player_util as util
+from lines import *
 
 
 class PlayerCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='персиваль')
+    @commands.command(aliases=['персиваль', 'команды'])
     async def help_for_players(self, ctx):
         embed = Embed()
         embed.title = "Обычные команды Персиваля"
@@ -30,7 +26,7 @@ class PlayerCog(commands.Cog):
                         inline=False)
         embed.add_field(name="!викиигрока",
                         value="**Описание:** дает вики-ссылки на всех персонажей игрока.\n**Формат:** команда, "
-                              "затем аналогично пункту выше.\n**Пример:**  `!вики @John`",
+                              "затем аналогично пункту выше.\n**Пример:**  `!викиигрока @John`",
                         inline=False)
         embed.add_field(name="!википерса",
                         value="**Описание:** дает вики-ссылку на конкретного персонажа. Имя персонажа должно быть на "
@@ -44,31 +40,17 @@ class PlayerCog(commands.Cog):
                         value="**Описание:** скидывает вам лаунчер в формате exe. Jar доступен у администрации. "
                               "Работает только в личке.\n**Формат:** команда\n**Пример:**  `!лаунчер`",
                         inline=False)
-        embed.add_field(name="!залитьскин",
-                        value="**Описание:** позволяет залить скин. Работает только в личке.\n**Формат:** команда, "
-                              "затем имя персонажа, затем постфикс (не обязателен). Если постфикс есть, "
-                              "имя файла будет представлять из себя \"имя персонажа + _ + постфикс\", если его нет, "
-                              "то просто имя персонажа.\n**Пример:**  `!залитьскин John armor`",
-                        inline=False)
-        embed.add_field(name="!узнатьскины",
-                        value="**Описание:** выводит имена всех ваших замечательных скинов на определенном персонаже "
-                              "(включая основной и с постфиксами). Работает только в личке.\n**Формат:** команда, "
-                              "затем имя персонажа.\n**Пример:**  `!узнатьскины John`",
-                        inline=False)
-        embed.add_field(name="!получитьскины",
-                        value="**Описание:** позволяет получить все ссылки на все скины, для ленивых.\n**Формат:** "
-                              "команда, затем название скина, без постфикса - только имя персонажа.\n**Пример:** "
-                              "`!получитьскины John`",
-                        inline=False)
-        embed.add_field(name="!получитьскин",
-                        value="**Описание:** позволяет получить ссылку на скин, для ленивых.\n**Формат:** команда, "
-                              "затем полное имя скина (с постфиксом если есть, одним словом).\n**Пример:**  "
-                              "`!получитьскин John_armor`",
-                        inline=False)
-        embed.add_field(name="!уничтожитьскин",
-                        value="**Описание:** позволяет уничтожить скин безвозвратно.\n**Формат:** команда, "
-                              "затем полное имя скина (с постфиксом если есть, одним словом).\n**Пример:**  "
-                              "`!уничтожитьскин John_armor`",
+        embed.add_field(name="!скин или !скины",
+                        value="**Описание:** интерактивная команда. Работает только в личке. Весь массив операций со "
+                              "скинами, будь это их удаление, добавление и пр.\n**Формат:** "
+                              'подсказывается по ходу, но можно забивать аргументы "наперед". Сначала указывается '
+                              'действие (залить, получить ссылку, вывести все, получить все ссылки, уничтожить) затем '
+                              'строго контекстуально. Если это заливание, то нужно указать имя персонажа, затем '
+                              'постфикс, ("Нет" считается отсутствием постфикса), затем нужно приложить пост с файлом. '
+                              'Как уже было сказано, можно миксовать как угодно, например заранее написать '
+                              '**!скин залить Vasya armor** а следующим сообщением залить файл. А можно сразу все. А  '
+                              'можно просто **!скин залить Vasya**, а потом указать постфикс и отправить сообщение '
+                              'со скином.\n**Пример:** `!скин`',
                         inline=False)
         await ctx.send(embed=embed)
 
@@ -102,7 +84,7 @@ class PlayerCog(commands.Cog):
         await ctx.send(output)
 
     @commands.command(name="пароль")
-    @commands.dm_only()
+    # @commands.dm_only()
     async def password_change(self, ctx, character, password):
         available_characters = db.get_all_characters_normal(ctx.message.author.id)
         if character in available_characters:
@@ -112,7 +94,7 @@ class PlayerCog(commands.Cog):
             await ctx.send("У тебя нет такого персонажа. Что-то тут не так.")
 
     @commands.command(name="лаунчер")
-    @commands.dm_only()
+    # @commands.dm_only()
     async def launcher(self, ctx):
         characters = db.get_all_characters_normal(ctx.message.author.id)
         if characters:
@@ -121,96 +103,52 @@ class PlayerCog(commands.Cog):
         else:
             await ctx.send("Не вижу у тебя персонажей. Зачем тебе лаунчер?")
 
-    @commands.command(name="залитьскин")
-    @commands.dm_only()
-    async def skin_uploading(self, ctx, character, postfix=""):
-        available_characters = db.get_all_characters_normal(ctx.message.author.id)
-        if character in available_characters:
-            if postfix != "":
-                file_name = character + "_" + postfix
+    @commands.command(aliases=['скин', 'скины'])
+    @inter.exception_handler_decorator
+    # @commands.dm_only()
+    async def skins_ultimate(self, ctx, *args):
+
+        action = None
+        subject = None
+        postfix = None
+        attachment = None
+
+        try:
+            action = args[0][0]
+            subject = args[0][1]
+            postfix = args[0][2]
+            attachment = ctx.message.attachments[0]
+        except IndexError:
+            pass
+        except AttributeError:
+            pass
+
+        if not action:
+            action = await inter.skins_actions(self, ctx, plr_skin_general_tooltip, plr_skin_general_error)
+
+        if action == "залить":
+            character = await inter.check_char(self, ctx, plr_skin_char_tooltip, plr_skin_char_error, subject)
+            if not postfix:
+                postfix = await inter.input_raw_text(self, ctx, plr_skin_postfix_tooltip)
+            if not attachment:
+                msg = await inter.msg_with_attachment(self, ctx, plr_skin_att_tooltip, plr_skin_att_error)
             else:
-                file_name = character
-            async with aiohttp.ClientSession() as session:
-                async with session.get(ctx.message.attachments[0].url, allow_redirects=False) as r:
-                    if r.headers.get('content-type') == "image/png":
-                        if (int(r.headers.get('content-length')) / 1024) <= 150:  # 150 кб как можно догадаться
-                            f = await aiofiles.open(f"{constants.dir_skins}/{file_name}.png", mode='wb')
-                            await f.write(await r.read())
-                            await f.close()
-                            await ctx.send("Скин успешно залит. Отличная работа (моя). Держи:\n"
-                                           f"{constants.link_skins}{file_name}.png")
-                        else:
-                            await ctx.send(
-                                "Это слишком большой файл. Заливай через админов, я с таким дел иметь не хочу.")
-                    else:
-                        await ctx.send("Я не знаю что это, но это не в формате, в котором обычно кидают скины.")
-        else:
-            await ctx.send("У тебя нет такого персонажа. Ц-ц-ц.")
-
-    @commands.command(name="узнатьскины")
-    @commands.dm_only()
-    async def list_skins(self, ctx, character):
-        available_characters = db.get_all_characters_normal(ctx.message.author.id)
-        if character in available_characters:
-            names = [pathlib.Path(x).stem for x in glob.glob(f"{constants.dir_skins}{character}*")]
-            output = ""
-            for character in names:
-                if names.index(character) == (len(names) - 1):
-                    output += (str(character))
-                else:
-                    output += (str(character) + ", ")
-            await ctx.send(output)
-        else:
-            await ctx.send("Я не могу сказать тебе о скинах персонажей, которых у тебя нет. ")
-
-    @commands.command(name="получитьскины")
-    @commands.dm_only()
-    async def get_skins_links(self, ctx, character):
-        available_characters = db.get_all_characters_normal(ctx.message.author.id)
-        if character in available_characters:
-            names = [pathlib.Path(x).stem for x in glob.glob(f"{constants.dir_skins}{character}*")]
-            if names:
-                output = "Держи:\n"
-                for character in names:
-                    if names.index(character) == (len(names) - 1):
-                        output += f"{constants.link_skins}{character}.png"
-                    else:
-                        output += f"{constants.link_skins}{character}.png\n"
-                await ctx.send(output)
-            else:
-                await ctx.send("Не могу ничего найти. Возможно, скинов нет?")
-        else:
-            await ctx.send("Я не выдаю скины персонажей, которых у тебя нет.")
-
-    @commands.command(name="получитьскин")
-    @commands.dm_only()
-    async def get_skin_link(self, ctx, full_skin_name):
-        available_characters = db.get_all_characters_normal(ctx.message.author.id)
-        for character in available_characters:
-            if str(full_skin_name).startswith(character):
-                if os.path.exists(f"{constants.dir_skins}{full_skin_name}.png"):
-                    await ctx.send(f"Держи: {constants.link_skins}{full_skin_name}.png")
-                else:
-                    await ctx.send("Я не вижу такого файла. Чувствую, что где-то меня обманули.")
-                return
-        else:
-            await ctx.send("Я не выдаю скины персонажей, которых у тебя нет. Можешь вручную сообразить, если хочешь.")
-
-    @commands.command(name="уничтожитьскин")
-    @commands.dm_only()
-    async def skins_eraser(self, ctx, full_skin_name):
-        available_characters = db.get_all_characters_normal(ctx.message.author.id)
-        for character in available_characters:
-            if str(full_skin_name).startswith(character):
-                if os.path.exists(f"{constants.dir_skins}/{full_skin_name}.png"):
-                    os.remove(f"{constants.dir_skins}/{full_skin_name}.png")
-                    await ctx.send("Скин уничтожен. Восстановлению не подлежит. Никогда.")
-                    return
-                else:
-                    await ctx.send("Я не вижу такого файла. Нечего уничтожать.")
-                    return
-        else:
-            await ctx.send("Я не могу удалить скины персонажей, которых у тебя нет. Это какое-то кощунство.")
+                msg = ctx.message
+            await util.upload_skin(ctx, character, postfix, msg)
+        elif action == "получить":
+            if not subject:
+                subject = await inter.input_raw_text(self, ctx, plr_skin_link_or_del_tooltip)
+            await util.get_skin_link(ctx, subject)
+        elif action == "получитьвсе":
+            character = await inter.check_char(self, ctx, plr_skin_get_all_tooltip, plr_skin_get_all_error, subject)
+            await util.get_skins_links(ctx, character)
+        elif action == "вывести":
+            character = await inter.check_char(self, ctx, plr_skin_list_tooltip, plr_skin_list_error, subject)
+            await util.list_skins(ctx, character)
+        elif action == "уничтожить":
+            if not subject:
+                subject = await inter.input_raw_text(self, ctx, plr_skin_link_or_del_tooltip)
+            await util.skins_eraser(ctx, subject)
 
 
 def setup(bot):
