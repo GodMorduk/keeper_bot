@@ -30,7 +30,7 @@ async def delete_user(ctx, subject):
     if result == 0:
         await ctx.send("Что-то не так. Может у этого игрока уже нет персонажей?")
     else:
-        await ctx.send(f"**Все** персонажи <@{result.id}> успешно удалены.")
+        await ctx.send(f"**Все** персонажи <@{player.id}> успешно удалены.")
 
 
 async def ban_char(ctx, subject):
@@ -86,8 +86,7 @@ async def check_user(ctx, subject):
     else:
         output = ""
         for character in info:
-            if info.index(character) == (len(info) - 1):
-                output += (str(character))
-            else:
+            output += (str(character))
+            if info.index(character) != (len(info) - 1):
                 output += (str(character) + ", ")
         await ctx.send(f"У <@{player.id}> забанены следующие персонажи: " + output)

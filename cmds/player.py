@@ -59,13 +59,15 @@ class PlayerCog(commands.Cog):
         if not user:
             user = ctx.message.author
         list_of_characters = db.get_all_characters_normal(user.id)
-        output = ""
-        for character in list_of_characters:
-            if list_of_characters.index(character) == (len(list_of_characters) - 1):
+        if not list_of_characters:
+            await ctx.send("А персонажей-то и нет.")
+        else:
+            output = ""
+            for character in list_of_characters:
                 output += (str(character))
-            else:
-                output += (str(character) + ", ")
-        await ctx.send(output)
+                if list_of_characters.index(character) != (len(list_of_characters) - 1):
+                    output += ", "
+            await ctx.send(output)
 
     @commands.command(name="википерса")
     async def wiki_char(self, ctx, character):
