@@ -4,7 +4,7 @@ from handlers.config_handler import get_config_value
 discord_category = "Discord"
 token = get_config_value(discord_category, "token")
 registrar_role = int(get_config_value(discord_category, "registrar_role_id"))
-wiki_registrar_role = int(get_config_value(discord_category, "registrar_role_id"))
+wiki_registrar_role = int(get_config_value(discord_category, "wiki-registrar_role_id"))
 admin_role = int(get_config_value(discord_category, "admin_role_id"))
 owner_id = int(get_config_value(discord_category, "owner_id"))
 player_role_id = int(get_config_value(discord_category, "player_role_id"))

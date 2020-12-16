@@ -6,12 +6,14 @@ from utility.interactive_util import user_converter
 
 async def registration(ctx, character, password, user, wiki_link):
     try:
-        query = db.add_new_player(character, password, user.id, wiki_link)
+        query = db.add_new_character(character, password, user.id, wiki_link)
     except peewee.IntegrityError:
         await ctx.send("Такой персонаж уже есть в базе данных. Отмена.")
+    except db.AgeNotConfirmed:
+        await ctx.send("Игрок не подтвердил возраст. Регистрация отменена. Ай-яй-яй.")
     else:
         if query == 0:
-            await ctx.send("Что-то пошло не так. Может, такой персонаж уже есть?")
+            await ctx.send("Что-то пошло не так. Свяжитесь с администрацией.")
         else:
             await ctx.send(f"Персонаж успешно зарегистрирован! Это уже {query} персонаж.")
 

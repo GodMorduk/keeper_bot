@@ -15,6 +15,10 @@ class UserAlreadyInInteractiveCommand(commands.CommandError):
     pass
 
 
+class MaxNumberOfTriesReached(commands.CommandError):
+    pass
+
+
 def do_check_decorator(func):
     def do_check_wrapper(self, ctx, *args, **kwargs):
         def check(m):
@@ -44,6 +48,8 @@ def exception_handler_decorator(func):
         except asyncio.TimeoutError:
             await ctx.send("Ты слишком долго не отвечаешь. Отмена операции.")
             return
+        except MaxNumberOfTriesReached:
+            await ctx.send("Слишком много неудачных попыток. Команда отменена.")
         else:
             return func_execution
 
@@ -63,7 +69,7 @@ async def max_len(check, self, ctx, len_max, tip_text, error_text, subject=None)
         if first_time:
             await ctx.send(tip_text)
         if not subject:
-            result = await self.bot.wait_for('message', timeout=10.0, check=check)
+            result = await self.bot.wait_for('message', timeout=30.0, check=check)
             result = str(result.content)
         else:
             result = subject
@@ -89,7 +95,7 @@ async def discord_user(check, self, ctx, tip_text, error_text, subject=None):
         if first_time:
             await ctx.send(tip_text)
         if not subject:
-            result = await self.bot.wait_for('message', timeout=10.0, check=check)
+            result = await self.bot.wait_for('message', timeout=30.0, check=check)
             result = str(result.content)
         else:
             result = subject
@@ -116,7 +122,7 @@ async def user_or_char(check, self, ctx, tip_text, error_text, subject=None):
         if first_time:
             await ctx.send(tip_text)
         if not subject:
-            result = await self.bot.wait_for('message', timeout=10.0, check=check)
+            result = await self.bot.wait_for('message', timeout=30.0, check=check)
             result = str(result.content)
         else:
             result = subject
@@ -138,7 +144,7 @@ async def skins_actions(check, self, ctx, tip_text, error_text):
         await asyncio.sleep(1)
         if first_time:
             await ctx.send(tip_text)
-        result = await self.bot.wait_for('message', timeout=10.0, check=check)
+        result = await self.bot.wait_for('message', timeout=30.0, check=check)
         result = str(result.content)
         if result.lower() == "отмена":
             raise CommandIsCancelled()
@@ -163,7 +169,7 @@ async def check_char(check, self, ctx, tip_text, error_text, subject=None):
             await ctx.send(tip_text)
 
         if not subject:
-            result = await self.bot.wait_for('message', timeout=10.0, check=check)
+            result = await self.bot.wait_for('message', timeout=30.0, check=check)
             result = str(result.content)
         else:
             result = subject
@@ -183,7 +189,7 @@ async def check_char(check, self, ctx, tip_text, error_text, subject=None):
 @do_check_decorator
 async def input_raw_text(check, self, ctx, tip_text):
     await ctx.send(tip_text)
-    result = await self.bot.wait_for('message', timeout=10.0, check=check)
+    result = await self.bot.wait_for('message', timeout=30.0, check=check)
     result = str(result.content)
     if result.lower() == "отмена":
         raise CommandIsCancelled()
@@ -197,7 +203,7 @@ async def msg_with_attachment(check, self, ctx, tip_text, error_text):
     while True:
         if first_time:
             await ctx.send(tip_text)
-        result = await self.bot.wait_for('message', timeout=10.0, check=check)
+        result = await self.bot.wait_for('message', timeout=30.0, check=check)
         if result.content.lower() == "отмена":
             raise CommandIsCancelled()
         elif not result.attachments:
@@ -206,3 +212,39 @@ async def msg_with_attachment(check, self, ctx, tip_text, error_text):
             continue
         else:
             return result
+
+
+@do_check_decorator
+async def msg_with_attachment(check, self, ctx, tip_text, error_text):
+    first_time = True
+    while True:
+        if first_time:
+            await ctx.send(tip_text)
+        result = await self.bot.wait_for('message', timeout=30.0, check=check)
+        if result.content.lower() == "отмена":
+            raise CommandIsCancelled()
+        elif not result.attachments:
+            await ctx.send(error_text)
+            first_time = False
+            continue
+        else:
+            return result
+
+
+@do_check_decorator
+async def age_confirmation(check, self, ctx, error_text):
+    mistakes = 0
+    while True:
+        if mistakes == 3:
+            await ctx.send("Ты три раза написал неправильно. Думаю, на сегодня с тебя хватит. Отменяю.")
+            raise MaxNumberOfTriesReached()
+        if mistakes > 0:
+            await ctx.send(error_text)
+        result = await self.bot.wait_for('message', timeout=30.0, check=check)
+        if result.content.lower() == "отмена":
+            raise CommandIsCancelled()
+        elif result.content.lower().strip(".") == "подтверждаю, что мне исполнилось 18 лет и я совершеннолетний":
+            return True
+        else:
+            mistakes += 1
+            continue

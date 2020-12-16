@@ -19,6 +19,10 @@ class PlayerCog(commands.Cog):
         embed.colour = constants.color_codes["Info"]
         embed.description = "Да-да? Тут перечислены все мои команды для обычных игроков. Я, если что, не настоящий " \
                             "Персиваль, а всего-лишь бот. "
+        embed.add_field(name="!подтвердитьвозраст",
+                        value="**Описание:** интерактивная команда. Нужно сделать один раз для каждого пользователя. "
+                              "id.\n**Пример:** `!подтвердитьвозраст`",
+                        inline=False)
         embed.add_field(name="!персонажи",
                         value="**Описание:** выводит всех персонажей указанного игрока.\n**Формат:** команда, "
                               "затем слапнутый игрок. Можно писать его имя пользователя (не ник) или его "
@@ -53,6 +57,29 @@ class PlayerCog(commands.Cog):
                               'со скином.\n**Пример:** `!скин`',
                         inline=False)
         await ctx.send(embed=embed)
+
+    @commands.command(name="подтвердитьвозраст")
+    @commands.cooldown(1, 86400.0, commands.BucketType.user)
+    @inter.exception_handler_decorator
+    async def age_confirmation(self, ctx, *args):
+
+        try:
+            current_state = db.get_if_age_confirmed(ctx.message.author.id)
+        except db.AgeNotConfirmed:
+            current_state = False
+
+        if current_state:
+            await ctx.send(plr_age_confirmation_already)
+            ctx.command.reset_cooldown(ctx)
+        else:
+            await ctx.send(plr_age_confirmation_tip)
+            result = await inter.age_confirmation(self, ctx, plr_age_confirmation_error)
+            if result is True:
+                db.confirm_age(ctx.message.author.id)
+                await ctx.send("Возраст подтвержден. Хорошей игры.")
+                ctx.command.reset_cooldown(ctx)
+            else:
+                await ctx.send("Не удалось подтвердить возраст. Не подтверждаю.")
 
     @commands.command(name="персонажи")
     async def characters(self, ctx, user: User = None):
