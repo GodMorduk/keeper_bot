@@ -64,7 +64,7 @@ class DiscordUtil(commands.Cog):
             elif isinstance(error, commands.errors.NoPrivateMessage):
                 await ctx.send('Я таким не занимаюсь в личных сообщениях. Только на сервере.')
             elif isinstance(error, commands.errors.CommandOnCooldown):
-                if str(ctx.message.content).startswith("!подтвердитьвозраст"):
+                if "подтвердитьвозраст" in str(ctx.message.content):
                     await ctx.send("Ты сегодня уже неудачно подтверждал возраст. Попробуй завтра, может завтра "
                                    "повзрослеешь.")
                 else:
