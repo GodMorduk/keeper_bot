@@ -2,6 +2,7 @@ import asyncio
 import re
 
 from discord.ext import commands
+from constants import timeout
 
 import handlers.db_handler as db
 from utility.discord_util import user_converter
@@ -69,7 +70,7 @@ async def max_len(check, self, ctx, len_max, tip_text, error_text, subject=None)
         if first_time:
             await ctx.send(tip_text)
         if not subject:
-            result = await self.bot.wait_for('message', timeout=30.0, check=check)
+            result = await self.bot.wait_for('message', timeout=timeout, check=check)
             result = str(result.content)
         else:
             result = subject
@@ -95,7 +96,7 @@ async def discord_user(check, self, ctx, tip_text, error_text, subject=None):
         if first_time:
             await ctx.send(tip_text)
         if not subject:
-            result = await self.bot.wait_for('message', timeout=30.0, check=check)
+            result = await self.bot.wait_for('message', timeout=timeout, check=check)
             result = str(result.content)
         else:
             result = subject
@@ -122,7 +123,7 @@ async def user_or_char(check, self, ctx, tip_text, error_text, subject=None):
         if first_time:
             await ctx.send(tip_text)
         if not subject:
-            result = await self.bot.wait_for('message', timeout=30.0, check=check)
+            result = await self.bot.wait_for('message', timeout=timeout, check=check)
             result = str(result.content)
         else:
             result = subject
@@ -144,7 +145,7 @@ async def skins_actions(check, self, ctx, tip_text, error_text):
         await asyncio.sleep(1)
         if first_time:
             await ctx.send(tip_text)
-        result = await self.bot.wait_for('message', timeout=30.0, check=check)
+        result = await self.bot.wait_for('message', timeout=timeout, check=check)
         result = str(result.content)
         if result.lower() == "отмена":
             raise CommandIsCancelled()
@@ -169,7 +170,7 @@ async def check_char(check, self, ctx, tip_text, error_text, subject=None):
             await ctx.send(tip_text)
 
         if not subject:
-            result = await self.bot.wait_for('message', timeout=30.0, check=check)
+            result = await self.bot.wait_for('message', timeout=timeout, check=check)
             result = str(result.content)
         else:
             result = subject
@@ -189,7 +190,7 @@ async def check_char(check, self, ctx, tip_text, error_text, subject=None):
 @do_check_decorator
 async def input_raw_text(check, self, ctx, tip_text):
     await ctx.send(tip_text)
-    result = await self.bot.wait_for('message', timeout=30.0, check=check)
+    result = await self.bot.wait_for('message', timeout=timeout, check=check)
     result = str(result.content)
     if result.lower() == "отмена":
         raise CommandIsCancelled()
@@ -203,7 +204,7 @@ async def msg_with_attachment(check, self, ctx, tip_text, error_text):
     while True:
         if first_time:
             await ctx.send(tip_text)
-        result = await self.bot.wait_for('message', timeout=30.0, check=check)
+        result = await self.bot.wait_for('message', timeout=timeout, check=check)
         if result.content.lower() == "отмена":
             raise CommandIsCancelled()
         elif not result.attachments:
@@ -220,7 +221,7 @@ async def msg_with_attachment(check, self, ctx, tip_text, error_text):
     while True:
         if first_time:
             await ctx.send(tip_text)
-        result = await self.bot.wait_for('message', timeout=30.0, check=check)
+        result = await self.bot.wait_for('message', timeout=timeout, check=check)
         if result.content.lower() == "отмена":
             raise CommandIsCancelled()
         elif not result.attachments:
@@ -240,7 +241,7 @@ async def age_confirmation(check, self, ctx, error_text):
             raise MaxNumberOfTriesReached()
         if mistakes > 0:
             await ctx.send(error_text)
-        result = await self.bot.wait_for('message', timeout=30.0, check=check)
+        result = await self.bot.wait_for('message', timeout=timeout, check=check)
         if result.content.lower() == "отмена":
             raise CommandIsCancelled()
         elif result.content.lower().strip(".") == "подтверждаю, что мне исполнилось 18 лет и я совершеннолетний":

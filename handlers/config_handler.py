@@ -14,6 +14,7 @@ def create_config(path):
     config.set("Discord", "admin_role_id", "enter admin group id")
     config.set("Discord", "owner_id", "enter owner id here")
     config.set("Discord", "player_role_id", "enter player role id here")
+    config.set("Discord", "timeout_max_time", "enter interactive commands max timeout")
     config.add_section("MySQL")
     config.set("MySQL", "Address", "localhost")
     config.set("MySQL", "Username", "db nickname")

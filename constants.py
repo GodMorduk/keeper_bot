@@ -8,6 +8,7 @@ wiki_registrar_role = int(get_config_value(discord_category, "wiki-registrar_rol
 admin_role = int(get_config_value(discord_category, "admin_role_id"))
 owner_id = int(get_config_value(discord_category, "owner_id"))
 player_role_id = int(get_config_value(discord_category, "player_role_id"))
+timeout = float(get_config_value(discord_category, "timeout_max_time"))
 
 client_category = "Client"
 dir_skins = get_config_value(client_category, "dir_skins")
