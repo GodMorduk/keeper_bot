@@ -12,13 +12,13 @@ class PlayerCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=['персиваль', 'команды'])
+    @commands.command(aliases=['галахад', 'команды'])
     async def help_for_players(self, ctx):
         embed = Embed()
-        embed.title = "Обычные команды Персиваля"
+        embed.title = "Обычные команды Галахада"
         embed.colour = constants.color_codes["Info"]
         embed.description = "Да-да? Тут перечислены все мои команды для обычных игроков. Я, если что, не настоящий " \
-                            "Персиваль, а всего-лишь бот. "
+                            "Галахад, а всего-лишь бот. "
         embed.add_field(name="!подтвердитьвозраст",
                         value="**Описание:** интерактивная команда. Нужно сделать один раз для каждого пользователя. "
                               "id.\n**Пример:** `!подтвердитьвозраст`",
