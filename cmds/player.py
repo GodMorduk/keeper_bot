@@ -1,6 +1,7 @@
 from discord import User, Embed, File
 from discord.ext import commands
 
+import config_values
 import constants
 import handlers.db_handler as db
 import utility.interactive_util as inter
@@ -127,8 +128,8 @@ class PlayerCog(commands.Cog):
     async def launcher(self, ctx):
         characters = db.get_all_characters_normal(ctx.message.author.id)
         if characters:
-            await ctx.send("Держи. Не потеряй.", file=File(fp=f"{constants.dir_launcher}Launcher.exe",
-                                                           filename=constants.launcher_name))
+            await ctx.send("Держи. Не потеряй.", file=File(fp=f"{config_values.dir_launcher}Launcher.exe",
+                                                           filename=config_values.launcher_name))
         else:
             await ctx.send("Не вижу у тебя персонажей. Зачем тебе лаунчер?")
 
@@ -140,33 +141,29 @@ class PlayerCog(commands.Cog):
         action = None
         subject = None
         postfix = None
-        attachment = None
+        attach_msg = None
 
         try:
             action = args[0][0]
             subject = args[0][1]
             postfix = args[0][2]
-            attachment = ctx.message.attachments[0]
+            if ctx.message.attachments[0]:
+                attach_msg = ctx.message
         except IndexError:
             pass
         except AttributeError:
             pass
 
-        if not action:
-            action = await inter.skins_actions(self, ctx, plr_skin_general_tooltip, plr_skin_general_error)
+        action = await inter.skins_actions(self, ctx, plr_skin_general_tooltip, plr_skin_general_error, action)
 
         if action == "залить":
             character = await inter.check_char(self, ctx, plr_skin_char_tooltip, plr_skin_char_error, subject)
-            if not postfix:
-                postfix = await inter.input_raw_text(self, ctx, plr_skin_postfix_tooltip)
-            if not attachment:
-                msg = await inter.msg_with_attachment(self, ctx, plr_skin_att_tooltip, plr_skin_att_error)
-            else:
-                msg = ctx.message
+            postfix = await inter.input_raw_text(self, ctx, plr_skin_postfix_tooltip, forbidden_chars, postfix, True)
+            msg = await inter.msg_with_attachment(self, ctx, plr_skin_att_tooltip, plr_skin_att_error, attach_msg)
             await util.upload_skin(ctx, character, postfix, msg)
+
         elif action == "получить":
-            if not subject:
-                subject = await inter.input_raw_text(self, ctx, plr_skin_link_or_del_tooltip)
+            subject = await inter.input_raw_text(self, ctx, wiki_user_tooltip, forbidden_chars, subject)
             await util.get_skin_link(ctx, subject)
         elif action == "получитьвсе":
             character = await inter.check_char(self, ctx, plr_skin_get_all_tooltip, plr_skin_get_all_error, subject)
@@ -175,8 +172,7 @@ class PlayerCog(commands.Cog):
             character = await inter.check_char(self, ctx, plr_skin_list_tooltip, plr_skin_list_error, subject)
             await util.list_skins(ctx, character)
         elif action == "уничтожить":
-            if not subject:
-                subject = await inter.input_raw_text(self, ctx, plr_skin_link_or_del_tooltip)
+            subject = await inter.input_raw_text(self, ctx, wiki_user_tooltip, forbidden_chars, subject)
             await util.skins_eraser(ctx, subject)
 
 

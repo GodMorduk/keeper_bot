@@ -1,10 +1,11 @@
 import asyncio
 import re
 
+import aiohttp
 from discord.ext import commands
-from constants import timeout
 
 import handlers.db_handler as db
+from config_values import timeout
 from utility.discord_util import user_converter
 
 
@@ -43,194 +44,160 @@ def exception_handler_decorator(func):
             await ctx.send("Ты отменил команду. Она, внезапно, отменена.")
             return
         except UserAlreadyInInteractiveCommand:
-            await ctx.send("Я вижу попытку ввести команду, когда ты уже в интерактивной команде. Отменяю предыдущую. "
-                           "Не делай так, ладно?")
+            await ctx.send("Я вижу попытку ввести команду, когда ты уже в интерактивной команде. Не делай так, ладно?")
             return
         except asyncio.TimeoutError:
             await ctx.send("Ты слишком долго не отвечаешь. Отмена операции.")
             return
         except MaxNumberOfTriesReached:
             await ctx.send("Слишком много неудачных попыток. Команда отменена.")
+        except db.PlayerBannedForever:
+            await ctx.send("Этот игрок в черном списке администрации. Я не буду выполнять с ним никаких операций.")
         else:
             return func_execution
 
     return exception_handler_wrapper
 
 
+async def get_subject_if_none(self, check, return_message_itself=False):
+    message = await self.bot.wait_for('message', timeout=timeout, check=check)
+    subject = str(message.content)
+
+    if subject.lower() == "отмена":
+        raise CommandIsCancelled()
+
+    if return_message_itself:
+        return message
+    else:
+        return subject
+
+
 # Сами модули
 
 @do_check_decorator
-async def max_len(check, self, ctx, len_max, tip_text, error_text, subject=None):
+async def user_or_pass(check, self, ctx, len_max, tip_text, error_text, subject=None, only_alpha=False):
     if not subject:
-        first_time = True
-    else:
-        first_time = False
+        await ctx.send(tip_text)
     while True:
-        await asyncio.sleep(1)
-        if first_time:
-            await ctx.send(tip_text)
         if not subject:
-            result = await self.bot.wait_for('message', timeout=timeout, check=check)
-            result = str(result.content)
-        else:
-            result = subject
-        if result.lower() == "отмена":
-            raise CommandIsCancelled()
-        else:
-            if len(result) > len_max:
-                await ctx.send(error_text)
-                first_time = False
-                subject = None
-                continue
-            return result
+            subject = await get_subject_if_none(self, check)
+        if len(subject) > len_max or subject.isascii() is False or (only_alpha and subject.isalpha() is False):
+            await ctx.send(error_text)
+            subject = None
+            continue
+        return subject
 
 
 @do_check_decorator
 async def discord_user(check, self, ctx, tip_text, error_text, subject=None):
     if not subject:
-        first_time = True
-    else:
-        first_time = False
+        await ctx.send(tip_text)
     while True:
-        await asyncio.sleep(1)
-        if first_time:
-            await ctx.send(tip_text)
         if not subject:
-            result = await self.bot.wait_for('message', timeout=timeout, check=check)
-            result = str(result.content)
+            subject = await get_subject_if_none(self, check)
+        try:
+            subject = await user_converter.convert(ctx, subject)
+        except commands.errors.MemberNotFound:
+            await ctx.send(error_text)
+            subject = None
+            continue
+
+        if db.check_player_ban_by_id(subject.id):
+            raise db.PlayerBannedForever
         else:
-            result = subject
-        if result.lower() == "отмена":
-            raise CommandIsCancelled()
-        else:
-            try:
-                result = await user_converter.convert(ctx, result)
-            except commands.errors.MemberNotFound:
-                await ctx.send(error_text)
-                first_time = False
-                continue
-        return result
+            return subject
 
 
 @do_check_decorator
-async def user_or_char(check, self, ctx, tip_text, error_text, subject=None):
+async def one_or_another(check, self, ctx, tip_text, error_text, subject=None,
+                         first_name="персонажа", second_name="игрока"):
     if not subject:
-        first_time = True
-    else:
-        first_time = False
+        await ctx.send(tip_text)
     while True:
-        await asyncio.sleep(1)
-        if first_time:
-            await ctx.send(tip_text)
         if not subject:
-            result = await self.bot.wait_for('message', timeout=timeout, check=check)
-            result = str(result.content)
-        else:
-            result = subject
-        if result.lower() == "отмена":
-            raise CommandIsCancelled()
-        if result != "персонажа" and result != "игрока":
+            subject = await get_subject_if_none(self, check)
+        if subject != first_name and subject != second_name:
             await ctx.send(error_text)
-            first_time = False
+            subject = None
             continue
-        else:
-            return result
+        return subject
 
 
 @do_check_decorator
-async def skins_actions(check, self, ctx, tip_text, error_text):
+async def skins_actions(check, self, ctx, tip_text, error_text, subject=None):
     possible_commands = ["залить", "получить", "вывести", "получитьвсе", "уничтожить"]
-    first_time = True
+    if not subject:
+        await ctx.send(tip_text)
     while True:
-        await asyncio.sleep(1)
-        if first_time:
-            await ctx.send(tip_text)
-        result = await self.bot.wait_for('message', timeout=timeout, check=check)
-        result = str(result.content)
-        if result.lower() == "отмена":
-            raise CommandIsCancelled()
-        if result not in possible_commands:
+        if not subject:
+            subject = await get_subject_if_none(self, check)
+        if subject not in possible_commands:
             await ctx.send(error_text)
-            first_time = False
+            subject = None
             continue
-        else:
-            return result
+        return subject
 
 
 @do_check_decorator
 async def check_char(check, self, ctx, tip_text, error_text, subject=None):
     if not subject:
-        first_time = True
-    else:
-        first_time = False
-
+        await ctx.send(tip_text)
     while True:
-        await asyncio.sleep(1)
-        if first_time:
-            await ctx.send(tip_text)
-
         if not subject:
-            result = await self.bot.wait_for('message', timeout=timeout, check=check)
-            result = str(result.content)
-        else:
-            result = subject
-
-        if result.lower() == "отмена":
-            raise CommandIsCancelled()
-
-        if db.is_such_char(result) is False:
+            subject = await get_subject_if_none(self, check)
+        if db.is_such_char(subject) is False:
             await ctx.send(error_text)
-            first_time = False
             subject = None
             continue
-        else:
-            return result
+        return subject
 
 
 @do_check_decorator
-async def input_raw_text(check, self, ctx, tip_text):
-    await ctx.send(tip_text)
-    result = await self.bot.wait_for('message', timeout=timeout, check=check)
-    result = str(result.content)
-    if result.lower() == "отмена":
-        raise CommandIsCancelled()
-    else:
-        return result
-
-
-@do_check_decorator
-async def msg_with_attachment(check, self, ctx, tip_text, error_text):
-    first_time = True
+async def msg_with_attachment(check, self, ctx, tip_text, error_text, subject=None):
+    if not subject:
+        await ctx.send(tip_text)
     while True:
-        if first_time:
-            await ctx.send(tip_text)
-        result = await self.bot.wait_for('message', timeout=timeout, check=check)
-        if result.content.lower() == "отмена":
-            raise CommandIsCancelled()
-        elif not result.attachments:
+        if not subject:
+            subject = await get_subject_if_none(self, check, return_message_itself=True)
+        if not subject.attachments:
             await ctx.send(error_text)
-            first_time = False
+            subject = None
             continue
-        else:
-            return result
+        return subject
 
 
 @do_check_decorator
-async def msg_with_attachment(check, self, ctx, tip_text, error_text):
-    first_time = True
+async def input_raw_text(check, self, ctx, tip_text, error_text=None, subject=None, check_if_alphabet=False):
+    if not subject:
+        await ctx.send(tip_text)
     while True:
-        if first_time:
-            await ctx.send(tip_text)
-        result = await self.bot.wait_for('message', timeout=timeout, check=check)
-        if result.content.lower() == "отмена":
-            raise CommandIsCancelled()
-        elif not result.attachments:
+        if not subject:
+            subject = await get_subject_if_none(self, check)
+        if subject.isascii() is False or (check_if_alphabet and subject.isalpha() is False):
             await ctx.send(error_text)
-            first_time = False
+            subject = None
             continue
-        else:
-            return result
+        return subject
 
+
+@do_check_decorator
+async def input_url(check, self, ctx, tip_text, error_text, subject=None):
+    if not subject:
+        await ctx.send(tip_text)
+    while True:
+        if not subject:
+            subject = await get_subject_if_none(self, check)
+        async with aiohttp.ClientSession() as session:
+            try:
+                await session.get(subject)
+            except (aiohttp.ClientConnectionError, aiohttp.InvalidURL):
+                await ctx.send(error_text)
+                subject = None
+                continue
+        return subject
+
+
+# Особое, поскольку без первого раза и с ошибками
 
 @do_check_decorator
 async def age_confirmation(check, self, ctx, error_text):

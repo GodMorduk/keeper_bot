@@ -1,6 +1,7 @@
 from discord import User, Embed
 from discord.ext import commands
 
+import config_values
 import constants
 import handlers.db_handler as db
 import utility.gamemaster_util as util
@@ -19,7 +20,7 @@ async def del_check_ban_unban(self, ctx, start_text, to_do_with_char, to_do_with
     except AttributeError:
         pass
 
-    what = await inter.user_or_char(self, ctx, start_text, gm_int_what_error, what)
+    what = await inter.one_or_another(self, ctx, start_text, gm_int_what_error, what)
     if what == "персонажа":
         subject = await inter.check_char(self, ctx, gm_int_char_tooltip, gm_int_char_error, subject)
         await to_do_with_char(ctx, subject)
@@ -33,7 +34,7 @@ class GameMasterCog(commands.Cog):
         self.bot = bot
 
     @commands.command(name='гейммастерская')
-    @commands.has_any_role(constants.registrar_role, constants.admin_role)
+    @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
     @commands.guild_only()
     async def help_for_moderation(self, ctx):
         embed = Embed()
@@ -89,7 +90,7 @@ class GameMasterCog(commands.Cog):
     # Блок команды регистрации
 
     @commands.command(name="зарегистрировать")
-    @commands.has_any_role(constants.registrar_role, constants.admin_role)
+    @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
     @commands.guild_only()
     @inter.exception_handler_decorator
     async def interactive_register(self, ctx, *args):
@@ -109,36 +110,37 @@ class GameMasterCog(commands.Cog):
         except AttributeError:
             pass
 
-        character = await inter.max_len(self, ctx, 15, gm_int_reg_char_tooltip, gm_int_reg_char_error, character)
-        password = await inter.max_len(self, ctx, 15, gm_int_reg_password_tooltip, gm_int_reg_password_error, password)
-        user = await inter.discord_user(self, ctx, gm_int_reg_user_tooltip, gm_int_reg_user_error, user)
-        wiki_link = await inter.max_len(self, ctx, 99, gm_int_reg_wiki_tooltip, gm_int_reg_user_tooltip, wiki_link)
+        character = await inter.user_or_pass(self, ctx, 15, gm_int_reg_char_tooltip, gm_int_reg_char_error, character,
+                                             True)
+        password = await inter.user_or_pass(self, ctx, 15, gm_int_reg_pass_tooltip, gm_int_reg_pass_error, password)
+        user = await inter.discord_user(self, ctx, point_on_user, gm_int_reg_user_error, user)
+        wiki_link = await inter.input_url(self, ctx, gm_int_reg_wiki_tooltip, gm_int_reg_wiki_error, wiki_link)
 
         await util.registration(ctx, character, password, user, wiki_link)
 
     @commands.command(name="удалить")
-    @commands.has_any_role(constants.registrar_role, constants.admin_role)
+    @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
     @commands.guild_only()
     @inter.exception_handler_decorator
     async def interactive_delete(self, ctx, *args):
         await del_check_ban_unban(self, ctx, gm_int_del_what_tooltip, util.delete_char, util.delete_user, *args)
 
     @commands.command(name="забанить")
-    @commands.has_any_role(constants.registrar_role, constants.admin_role)
+    @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
     @commands.guild_only()
     @inter.exception_handler_decorator
     async def interactive_ban(self, ctx, *args):
         await del_check_ban_unban(self, ctx, gm_int_ban_what_tooltip, util.ban_char, util.ban_user, *args)
 
     @commands.command(name="разбанить")
-    @commands.has_any_role(constants.registrar_role, constants.admin_role)
+    @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
     @commands.guild_only()
     @inter.exception_handler_decorator
     async def interactive_unban(self, ctx, *args):
         await del_check_ban_unban(self, ctx, gm_int_unban_what_tooltip, util.unban_char, util.unban_user, *args)
 
     @commands.command(name="проверить")
-    @commands.has_any_role(constants.registrar_role, constants.admin_role)
+    @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
     @commands.guild_only()
     @inter.exception_handler_decorator
     async def interactive_check(self, ctx, *args):
@@ -148,7 +150,7 @@ class GameMasterCog(commands.Cog):
 
     @commands.command(name="дамп")
     @commands.guild_only()
-    @commands.has_any_role(constants.registrar_role, constants.admin_role)
+    @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
     async def dump(self, ctx, user: User):
         rows = db.get_all_characters_raw(user.id)
         if rows:
@@ -162,7 +164,7 @@ class GameMasterCog(commands.Cog):
 
     @commands.command(name="судо-пароль")
     @commands.guild_only()
-    @commands.has_any_role(constants.registrar_role, constants.admin_role)
+    @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
     async def sudo_password_change(self, ctx, character, password):
         result = db.set_new_password(character, password)
         if result == 0:
@@ -172,7 +174,7 @@ class GameMasterCog(commands.Cog):
 
     @commands.command(name="банлист")
     @commands.guild_only()
-    @commands.has_any_role(constants.registrar_role, constants.admin_role)
+    @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
     async def ban_list(self, ctx):
         ban_list = db.ban_full_list()
         if ban_list:
