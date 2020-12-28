@@ -1,6 +1,9 @@
+import re
+
 from discord import Embed
 from discord.ext import commands
 
+import config_values
 import constants
 
 user_converter = commands.MemberConverter()
@@ -12,7 +15,7 @@ class DiscordUtil(commands.Cog):
         self.bot = bot
 
     async def print_error_in_embed(self, ctx, is_error=False, body='ERROR!'):
-        debug_channel = self.bot.get_channel(constants.log_channel)
+        debug_channel = self.bot.get_channel(config_values.log_channel)
         embed = Embed()
         embed.add_field(name="Кто", value=ctx.author)
         embed.add_field(name="Команда:", value=ctx.message.content)
@@ -37,7 +40,7 @@ class DiscordUtil(commands.Cog):
             return  # из за префикса !, оверлап с командами карл-бота и зачем нам это логировать
         else:
             print("Caught error! " + str(error))  # в консоль занести
-            if constants.log_enable:
+            if config_values.log_enable:
                 await self.print_error_in_embed(ctx, is_error=True, body=error)
             if str(error).endswith("Cannot send an empty message"):  # потому что там ошибка bad request
                 await ctx.send("Не могу ничего отправить. Сообщение пустое по какой-то причине.")
@@ -53,13 +56,13 @@ class DiscordUtil(commands.Cog):
                 await ctx.send("Я не могу найти этого пользователя. Ты точно все правильно вбил?")
             elif isinstance(error, commands.errors.MissingAnyRole):
                 required_role_id = int(str(error.missing_roles[0]))
-                if required_role_id == constants.registrar_role:
+                if required_role_id == config_values.registrar_role:
                     await ctx.send('Ты даже не регистратор! Крайне дерзко с твоей стороны.')
-                elif required_role_id == constants.wiki_registrar_role:
+                elif required_role_id == config_values.wiki_registrar_role:
                     await ctx.send('Ты не вики-мастер. Меня так просто не проведешь.')
             elif isinstance(error, commands.errors.MissingRole):
                 required_role_id = int(str(error.missing_role))
-                if required_role_id == constants.admin_role:
+                if required_role_id == config_values.admin_role:
                     await ctx.send('Ты не админ! Тебе нельзя такие штуки!')
             elif isinstance(error, commands.errors.NoPrivateMessage):
                 await ctx.send('Я таким не занимаюсь в личных сообщениях. Только на сервере.')
@@ -69,6 +72,15 @@ class DiscordUtil(commands.Cog):
                                    "повзрослеешь.")
                 else:
                     await ctx.send(f'Воу-воу. Полегче. Эта команда пока на кулдауне.')
+
+    @commands.Cog.listener("on_message")
+    async def show_help(self, msg):
+        ctx = await self.bot.get_context(msg)
+        if re.match(f"^<@!?{self.bot.user.id}>.*", msg.content) and not ctx.valid:
+            await ctx.send("Привет. Я бот Персиваль. Мои команды можно посмотреть, если сказать мне 'персиваль' или "
+                           "'команды'.\nМои префиксы (что писать перед командой, чтобы я обратил на тебя внимание): "
+                           "это \"!\" или можно меня слапнуть, сопроводив это командой. В случае слапа нужен пробел."
+                           "\n**Примеры команд:** `!персиваль` или `@Персиваль команды`.")
 
 
 def setup(bot):

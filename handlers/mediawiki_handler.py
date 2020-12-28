@@ -3,16 +3,16 @@ from shlex import quote as shlex_quote
 
 import aiohttp
 
-from handlers.config_handler import get_config_value
+import config_values
 
 s = aiohttp.ClientSession()
 category = "MediaWiki"
 
-wiki_url = get_config_value(category, "wiki_url")
+wiki_url = config_values.wiki_url
 api_url = wiki_url + "api.php"
 
-rollback_path = get_config_value(category, "rollback_script_path")
-change_password_path = get_config_value(category, "change_password_script_path")
+rollback_path = config_values.rollback_script_path
+change_password_path = config_values.change_password_script_path
 
 
 async def create_a_token(token_type=None):
@@ -44,8 +44,8 @@ async def mediawiki_login():
     login_token = await create_a_token("login")
     params_login = {
         'action': "login",
-        'lgname': get_config_value(category, "login"),
-        'lgpassword': get_config_value(category, "password"),
+        'lgname': config_values.wiki_login,
+        'lgpassword': config_values.wiki_password,
         'lgtoken': login_token,
         'format': "json"
     }

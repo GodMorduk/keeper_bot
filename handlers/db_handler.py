@@ -1,15 +1,15 @@
 import bcrypt
 import peewee as pw
 
-from handlers.config_handler import get_config_value
+import config_values
 from utility.password_util import hash_password_string
 
 category = "MySQL"
-db = pw.MySQLDatabase(get_config_value(category, "db"),
-                      user=get_config_value(category, "username"),
-                      password=get_config_value(category, "password"),
-                      host=get_config_value(category, "address"),
-                      port=int(get_config_value(category, "port")))
+db = pw.MySQLDatabase(database=config_values.db_name,
+                      user=config_values.db_username,
+                      password=config_values.db_password,
+                      host=config_values.db_address,
+                      port=config_values.db_port)
 
 
 class BaseModel(pw.Model):
@@ -25,21 +25,24 @@ class Character(BaseModel):
     banned = pw.BooleanField(default=False)
 
     class Meta:
-        table_name = 'character_database'
+        table_name = 'characters_database'
 
 
 class Player(BaseModel):
-    discord_id = pw.CharField(max_length=99)
+    discord_id = pw.CharField(max_length=99, unique=True)
     age_confirmation = pw.BooleanField(default=False)
+    banned = pw.BooleanField(default=False)
+
+    class Meta:
+        table_name = 'players_database'
 
 
-# заготовка на будущее, пока просто пустая бд
 class WikiUser(BaseModel):
     wiki_account = pw.CharField(max_length=50, unique=True)
     discord_id = pw.CharField(max_length=99)
 
     class Meta:
-        table_name = 'wiki_users'
+        table_name = 'wiki_users_database'
 
 
 def mysql_connection_decorator(func):
@@ -60,21 +63,41 @@ class AgeNotConfirmed(Exception):
     pass
 
 
+class PlayerBannedForever(Exception):
+    pass
+
+
+# Команды вики-базы
+
 @mysql_connection_decorator
-def add_new_character(character, password, discord_id, wiki_link):
+def add_new_wiki_account(wiki_account, discord_id):
     if not get_if_age_confirmed(discord_id):
         raise AgeNotConfirmed
     else:
-        password = hash_password_string(password)
-        query = Character.create(character=character, password=password, discord_id=discord_id, wiki_link=wiki_link)
+        query = WikiUser.create(wiki_account=wiki_account, discord_id=discord_id)
         return query
 
+
+@mysql_connection_decorator
+def check_all_accounts_by_owner(discord_id):
+    query = WikiUser.select().where(WikiUser.discord_id == discord_id).execute()
+    return [user.wiki_account for user in query]
+
+
+@mysql_connection_decorator
+def check_owner_of_wiki_account(wiki_account):
+    query = WikiUser.select().where(WikiUser.wiki_account == wiki_account).execute()
+    for user in query:
+        return user.discord_id
+
+
+# Команды базы данных игроков
 
 @mysql_connection_decorator
 def get_if_age_confirmed(discord_id):
     query = Player.select().where((Player.discord_id == discord_id) & (Player.age_confirmation == 1)).count()
     if query == 0:
-        raise AgeNotConfirmed()
+        return False
     else:
         return True
 
@@ -83,6 +106,42 @@ def get_if_age_confirmed(discord_id):
 def confirm_age(discord_id):
     query = Player.create(discord_id=discord_id, age_confirmation=True)
     return query
+
+
+@mysql_connection_decorator
+def ban_player_by_id(discord_id):
+    query = Player.update(banned=1).where(Player.discord_id == discord_id).execute()
+    if not query:
+        try:
+            query = Player.create(discord_id=discord_id, age_confirmation=False, banned=True)
+        except pw.IntegrityError:
+            return False
+    return query
+
+
+@mysql_connection_decorator
+def check_player_ban_by_id(discord_id):
+    query = Player.select().where(Player.discord_id == discord_id)
+    for user in query:
+        return user.banned
+
+
+@mysql_connection_decorator
+def unban_player_by_id(discord_id):
+    query = Player.update(banned=0).where(Player.discord_id == discord_id).execute()
+    return query
+
+
+# Команды базы данных ингейм
+
+@mysql_connection_decorator
+def add_new_character(character, password, discord_id, wiki_link):
+    if not get_if_age_confirmed(discord_id):
+        raise AgeNotConfirmed
+    else:
+        password = hash_password_string(password)
+        query = Character.create(character=character, password=password, discord_id=discord_id, wiki_link=wiki_link)
+        return query
 
 
 @mysql_connection_decorator
@@ -123,8 +182,9 @@ def get_all_characters_raw(discord_id):
 
 
 @mysql_connection_decorator
-def set_new_password(character, password):
-    query = Character.update(password=password).where(Character.character == character).execute()
+def set_new_password(character, new_password):
+    hashed = hash_password_string(new_password)
+    query = Character.update(password=hashed).where(Character.character == character).execute()
     return query
 
 
