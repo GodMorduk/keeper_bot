@@ -1,6 +1,8 @@
+import bcrypt
 import peewee as pw
 
 from handlers.config_handler import get_config_value
+from utility.password_util import hash_password_string
 
 category = "MySQL"
 db = pw.MySQLDatabase(get_config_value(category, "db"),
@@ -17,7 +19,7 @@ class BaseModel(pw.Model):
 
 class Character(BaseModel):
     character = pw.CharField(max_length=15, unique=True)
-    password = pw.CharField(max_length=15)
+    password = pw.CharField(max_length=60)
     discord_id = pw.CharField(max_length=18)
     wiki_link = pw.CharField(max_length=99)
     banned = pw.BooleanField(default=False)
@@ -63,6 +65,7 @@ def add_new_character(character, password, discord_id, wiki_link):
     if not get_if_age_confirmed(discord_id):
         raise AgeNotConfirmed
     else:
+        password = hash_password_string(password)
         query = Character.create(character=character, password=password, discord_id=discord_id, wiki_link=wiki_link)
         return query
 
@@ -174,5 +177,20 @@ def is_such_char(character):
     query = Character.select().dicts().where((Character.character == character))
     if query.exists():
         return True
+    else:
+        return False
+
+
+@mysql_connection_decorator
+def check_user_password(character, password):
+    password = str.encode(password)
+    try:
+        query = Character.get(Character.character == character).password
+    except pw.DoesNotExist:
+        return False
+    if query:
+        password_from_db = str.encode(query)
+        if bcrypt.checkpw(password, password_from_db):
+            return True
     else:
         return False

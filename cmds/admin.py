@@ -3,6 +3,7 @@ from discord.ext import commands
 
 import constants
 from bot import initial_extensions
+from handlers.db_handler import check_user_password
 
 
 class AdminCog(commands.Cog):
@@ -23,6 +24,15 @@ class AdminCog(commands.Cog):
         if what == "делом":
             await self.bot.change_presence(activity=None)
             await ctx.send("Занимаюсь делом, ладно")
+
+    @commands.has_role(constants.admin_role)
+    @commands.command(name='проверитьлогинпароль', hidden=True)
+    async def check_user_password(self, ctx, user, password):
+        result = check_user_password(user, password)
+        if result:
+            await ctx.send("Есть совпадение.")
+        else:
+            await ctx.send("Нет совпадения.")
 
     @commands.has_role(constants.admin_role)
     @commands.command(name='переключитьдебаг', hidden=True)
