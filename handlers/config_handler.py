@@ -36,6 +36,9 @@ def create_config(path):
     config.add_section("Errors")
     config["Errors"]["log_enable"] = "enable error logging in channel provided below"
     config["Errors"]["log_channel_id"] = "enter id here"
+    config.add_section("Extra")
+    config["Extra"]["bot_name"] = "bot name"
+    config["Extra"]["bot_genitive_name"] = "bot_genitive_name"
 
     with open(path, "w") as config_file:
         config.write(config_file)

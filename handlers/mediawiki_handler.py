@@ -125,7 +125,7 @@ async def change_password(username, password):
 
 async def rollback(username):
     result = subprocess.run(
-        f'php {rollback_path} --user={shlex_quote(username)} --summary="Откат Галахадом"',
+        f'php {rollback_path} --user={shlex_quote(username)} --summary=f"Откат {config_values.bot_genitive_name}"',
         shell=True,
         text=True,
         stdout=subprocess.PIPE,

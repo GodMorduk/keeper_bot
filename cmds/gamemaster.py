@@ -15,9 +15,7 @@ async def del_check_ban_unban(self, ctx, start_text, to_do_with_char, to_do_with
     try:
         what = args[0][0]
         subject = args[0][1]
-    except IndexError:
-        pass
-    except AttributeError:
+    except (IndexError, AttributeError):
         pass
 
     what = await inter.one_or_another(self, ctx, start_text, gm_int_what_error, what)
@@ -42,48 +40,51 @@ class GameMasterCog(commands.Cog):
         embed.colour = constants.color_codes["Info"]
         embed.description = "Вводите с осторожностью, перепроверяйте команды и все такое. Непоправимого мало, " \
                             "а вот неприятного и так достаточно. "
-        embed.add_field(name="!зарегистрировать",
+        embed.add_field(name=f"{config_values.prefix} зарегистрировать",
                         value="**Ввод без аргументов или с их нехваткой активирует интерактивный режим.** \n"
                               "**Описание:** регистрирует нового персонажа. \n**Формат:** команда, имя персонажа ("
                               "латинница с большой буквы), пароль, затем слап или id или юзернейм игрока, "
-                              "и наконец прямая ссылка на вики \n**Пример:** `!зарегистрировать John qwerty @John "
-                              "https://google.com`",
+                              f"и наконец прямая ссылка на вики \n**Пример:** `{config_values.prefix}"
+                              f"зарегистрировать John qwerty @John https://google.com`",
                         inline=False)
-        embed.add_field(name="!удалить",
+        embed.add_field(name=f"{config_values.prefix}удалить",
                         value="**Ввод без аргументов или с их нехваткой активирует интерактивный режим.** \n"
                               '**Описание:** удаляет персонажа либо игрока. Навсегда.\n**Формат:** команда, '
                               'слово "персонажа" или "игрока", затем соотв-но имя персонажа или имя (можно передать '
-                              'через юзернейм, слап, id) игрока.\n**Пример:**  `!удалить игрока @John`\n',
+                              f'через юзернейм, слап, id) игрока.\n**Пример:**  `{config_values.prefix}'
+                              'удалить игрока @John`\n',
                         inline=False)
-        embed.add_field(name="!забанить",
+        embed.add_field(name=f"{config_values.prefix}забанить",
                         value="**Ввод без аргументов или с их нехваткой активирует интерактивный режим.** \n"
                               '**Описание:** банит (но не удаляет) игрока в базе данных (не в игре и не в '
-                              'дискорде).\n**Формат:** аналогичный с командой "удалить".\n**Пример:**  `!забанить '
-                              'персонажа John`\n',
+                              'дискорде).\n**Формат:** аналогичный с командой "удалить".\n**Пример:**  `'
+                              f'{config_values.prefix}забанить персонажа John`\n',
                         inline=False)
-        embed.add_field(name="!разбанить",
+        embed.add_field(name=f"{config_values.prefix}разбанить",
                         value="**Ввод без аргументов или с их нехваткой активирует интерактивный режим.** \n"
                               '**Описание:** разбанивает одного персонажа или всех персонажей игрока.\n**Формат:** '
-                              'аналогичный с командой "удалить"\n**Пример:**  `!разбанить игрока John"`\n',
+                              'аналогичный с командой "удалить"\n**Пример:**  `'
+                              f'{config_values.prefix}разбанить игрока John"`\n',
                         inline=False)
-        embed.add_field(name="!проверить",
+        embed.add_field(name=f"{config_values.prefix}проверить",
                         value="**Ввод без аргументов или с их нехваткой активирует интерактивный режим.** \n"
                               "**Описание:** если спрашивают об игроке, выводит всех его забаненных персонажей, "
                               "если о персонаже - пишет, забанен ли он.\n**Формат:** аналогичный с командой "
-                              "'удалить'\n**Пример:**  `!проверить игрока John `\n",
+                              f"'удалить'\n**Пример:**  `{config_values.prefix}проверить игрока John `\n",
                         inline=False)
-        embed.add_field(name="!дамп",
-                        value="**Описание:** Выводит всю инфу обо всех персонажах игрока. id.\n**Формат:** команда, "
-                              "слап, id или юзернейм игрока. \n**Пример:**  `!дамп 123412341234123412`\n",
+        embed.add_field(name=f"{config_values.prefix}дамп",
+                        value=f"**Описание:** Выводит всю инфу обо всех персонажах игрока. id.\n**Формат:** команда, "
+                              f"слап, id или юзернейм игрока. \n**Пример:**  `{config_values.prefix}"
+                              f"дамп 123412341234123412`\n",
                         inline=False)
-        embed.add_field(name="!судо-пароль",
+        embed.add_field(name=f"{config_values.prefix}судо-пароль",
                         value="**Описание:** меняет пароль на персонаже, даже если вы не его владелец.\n**Формат:** "
-                              "команда, затем имя персонажа, затем новый пароль.\n**Пример:**  `!судо-пароль John "
-                              "qwerty123`\n",
+                              "команда, затем имя персонажа, затем новый пароль.\n**Пример:**  `"
+                              f"{config_values.prefix}судо-пароль John qwerty123`\n",
                         inline=False)
-        embed.add_field(name="!банлист",
+        embed.add_field(name=f"{config_values.prefix}банлист",
                         value="**Описание:** выводит всех забаненных.\n**Формат:** команда, без аргументов. "
-                              "\n**Пример:**  `!банлист qwerty123`\n",
+                              f"\n**Пример:**  `{config_values.prefix}банлист`\n",
                         inline=False)
         await ctx.send(embed=embed)
 
@@ -105,13 +106,10 @@ class GameMasterCog(commands.Cog):
             password = args[0][1]
             user = args[0][2]
             wiki_link = args[0][3]
-        except IndexError:
-            pass
-        except AttributeError:
+        except (IndexError, AttributeError):
             pass
 
-        character = await inter.user_or_pass(self, ctx, 15, gm_int_reg_char_tooltip, gm_int_reg_char_error, character,
-                                             True)
+        character = await inter.input_raw_text_no_checks(self, ctx, plr_skin_postfix_tooltip, character)
         password = await inter.user_or_pass(self, ctx, 15, gm_int_reg_pass_tooltip, gm_int_reg_pass_error, password)
         user = await inter.discord_user(self, ctx, point_on_user, gm_int_reg_user_error, user)
         wiki_link = await inter.input_url(self, ctx, gm_int_reg_wiki_tooltip, gm_int_reg_wiki_error, wiki_link)

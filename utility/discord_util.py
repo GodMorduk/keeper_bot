@@ -77,10 +77,11 @@ class DiscordUtil(commands.Cog):
     async def show_help(self, msg):
         ctx = await self.bot.get_context(msg)
         if re.match(f"^<@!?{self.bot.user.id}>.*", msg.content) and not ctx.valid:
-            await ctx.send("Привет. Я бот Галахад. Мои команды можно посмотреть, если сказать мне 'галахад' или "	
-                           "'команды'.\nМои префиксы (что писать перед командой, чтобы я обратил на тебя внимание): "	
-                           "это \"!\" или можно меня слапнуть, сопроводив это командой. В случае слапа нужен пробел."	
-                           "\n**Примеры команд:** `!галахад` или `@галахад команды`.")
+            await ctx.send(f"Привет. Я бот {config_values.bot_name}. Мои команды можно посмотреть, если сказать мне "
+                           f"'{config_values.bot_name}' или 'команды'.\nМои префиксы (что писать перед командой, чтобы "
+                           f"я обратил на тебя внимание): это \"{config_values.prefix}\" или можно меня слапнуть, "
+                           f"сопроводив это командой. В случае слапа нужен пробел.\n**Примеры команд:** "
+                           f"`{config_values.prefix}{config_values.bot_name} или `@{config_values.bot_name} команды`.")
 
 
 def setup(bot):

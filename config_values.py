@@ -1,6 +1,6 @@
 from handlers.config_handler import config, settings_path
 
-config.read(settings_path)
+config.read(settings_path, encoding="utf-8")
 
 token = config["Discord"]["token"]
 prefix = config["Discord"]["prefix"]
@@ -30,3 +30,6 @@ rollback_script_path = config["MediaWiki"]["rollback_script_path"]
 
 log_enable = config["Errors"].getboolean("log_enable")
 log_channel = config["Errors"].getint("log_channel_id")
+
+bot_name = config["Extra"]["bot_name"]
+bot_genitive_name = config["Extra"]["bot_genitive_name"]
