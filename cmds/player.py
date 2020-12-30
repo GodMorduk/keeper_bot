@@ -7,6 +7,7 @@ import handlers.db_handler as db
 import utility.interactive_util as inter
 import utility.player_util as util
 from lines import *
+from cmds.admin import check_admin_ban_decorator
 
 
 class PlayerCog(commands.Cog):
@@ -62,6 +63,7 @@ class PlayerCog(commands.Cog):
     @commands.command(name="подтвердитьвозраст")
     @commands.cooldown(1, 86400.0, commands.BucketType.user)
     @inter.exception_handler_decorator
+    @check_admin_ban_decorator
     async def age_confirmation(self, ctx, *args):
 
         try:
@@ -83,6 +85,7 @@ class PlayerCog(commands.Cog):
                 await ctx.send("Не удалось подтвердить возраст. Не подтверждаю.")
 
     @commands.command(name="персонажи")
+    @check_admin_ban_decorator
     async def characters(self, ctx, user: User = None):
         if not user:
             user = ctx.message.author
@@ -98,11 +101,13 @@ class PlayerCog(commands.Cog):
             await ctx.send(output)
 
     @commands.command(name="википерса")
+    @check_admin_ban_decorator
     async def wiki_char(self, ctx, character):
         output = db.get_character_link(character)
         await ctx.send(output)
 
     @commands.command(name="викиигрока")
+    @check_admin_ban_decorator
     @commands.cooldown(1, 15.0, commands.BucketType.default)
     async def wiki_players(self, ctx, user: User = None):
         if not user:
@@ -114,7 +119,7 @@ class PlayerCog(commands.Cog):
         await ctx.send(output)
 
     @commands.command(name="пароль")
-    # @commands.dm_only()
+    @check_admin_ban_decorator
     async def password_change(self, ctx, character, password):
         available_characters = db.get_all_characters_normal(ctx.message.author.id)
         if character in available_characters:
@@ -124,7 +129,7 @@ class PlayerCog(commands.Cog):
             await ctx.send("У тебя нет такого персонажа. Что-то тут не так.")
 
     @commands.command(name="лаунчер")
-    # @commands.dm_only()
+    @check_admin_ban_decorator
     async def launcher(self, ctx):
         characters = db.get_all_characters_normal(ctx.message.author.id)
         if characters:
@@ -135,7 +140,7 @@ class PlayerCog(commands.Cog):
 
     @commands.command(aliases=['скин', 'скины'])
     @inter.exception_handler_decorator
-    # @commands.dm_only()
+    @check_admin_ban_decorator
     async def skins_ultimate(self, ctx, *args):
 
         action = None
