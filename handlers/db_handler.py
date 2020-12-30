@@ -104,7 +104,10 @@ def get_if_age_confirmed(discord_id):
 
 @mysql_connection_decorator
 def confirm_age(discord_id):
-    query = Player.create(discord_id=discord_id, age_confirmation=True)
+    try:
+        query = Player.create(discord_id=discord_id, age_confirmation=True)
+    except pw.IntegrityError:
+        query = Player.update(age_confirmation=True).where(Player.discord_id == discord_id).execute()
     return query
 
 

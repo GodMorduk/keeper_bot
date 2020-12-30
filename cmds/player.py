@@ -153,16 +153,14 @@ class PlayerCog(commands.Cog):
             postfix = args[0][2]
             if ctx.message.attachments[0]:
                 attach_msg = ctx.message
-        except IndexError:
-            pass
-        except AttributeError:
+        except (IndexError, AttributeError):
             pass
 
         action = await inter.skins_actions(self, ctx, plr_skin_general_tooltip, plr_skin_general_error, action)
 
         if action == "залить":
             character = await inter.check_char(self, ctx, plr_skin_char_tooltip, plr_skin_char_error, subject)
-            postfix = await inter.input_raw_text(self, ctx, plr_skin_postfix_tooltip, forbidden_chars, postfix, True)
+            postfix = await inter.input_raw_text_no_checks(self, ctx, plr_skin_postfix_tooltip, postfix)
             msg = await inter.msg_with_attachment(self, ctx, plr_skin_att_tooltip, plr_skin_att_error, attach_msg)
             await util.upload_skin(ctx, character, postfix, msg)
 

@@ -86,7 +86,7 @@ class GameMasterCog(commands.Cog):
                         inline=False)
         embed.add_field(name=f"{config_values.prefix}банлист",
                         value="**Описание:** выводит всех забаненных.\n**Формат:** команда, без аргументов. "
-                              f"\n**Пример:**  `{config_values.prefix}банлист qwerty123`\n",
+                              f"\n**Пример:**  `{config_values.prefix}банлист`\n",
                         inline=False)
         await ctx.send(embed=embed)
 
@@ -113,8 +113,7 @@ class GameMasterCog(commands.Cog):
         except AttributeError:
             pass
 
-        character = await inter.user_or_pass(self, ctx, 15, gm_int_reg_char_tooltip, gm_int_reg_char_error, character,
-                                             True)
+        character = await inter.input_raw_text_no_checks(self, ctx, plr_skin_postfix_tooltip, character)
         password = await inter.user_or_pass(self, ctx, 15, gm_int_reg_pass_tooltip, gm_int_reg_pass_error, password)
         user = await inter.discord_user(self, ctx, point_on_user, gm_int_reg_user_error, user)
         wiki_link = await inter.input_url(self, ctx, gm_int_reg_wiki_tooltip, gm_int_reg_wiki_error, wiki_link)

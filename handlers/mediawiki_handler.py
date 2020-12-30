@@ -4,8 +4,6 @@ from shlex import quote as shlex_quote
 import aiohttp
 
 import config_values
-
-s = aiohttp.ClientSession()
 category = "MediaWiki"
 
 wiki_url = config_values.wiki_url
@@ -21,23 +19,26 @@ async def create_a_token(token_type=None):
     else:
         token_params = {'action': "query", 'meta': "tokens", 'type': token_type, 'format': "json"}
 
-    token_request = await s.get(url=api_url, params=token_params)
-    token_data = await token_request.json()
+    async with aiohttp.ClientSession() as s:
 
-    if token_type is None:
-        return token_data['query']['tokens']['csrftoken']
-    else:
-        token_type += "token"
-        return token_data['query']['tokens'][token_type]
+        token_request = await s.get(url=api_url, params=token_params)
+        token_data = await token_request.json()
+
+        if token_type is None:
+            return token_data['query']['tokens']['csrftoken']
+        else:
+            token_type += "token"
+            return token_data['query']['tokens'][token_type]
 
 
 async def proceed_request_and_return_as_data(params, output=True):
-    creation_request = await s.post(api_url, data=params)
-    fixed = await creation_request.json()
-    if output:
-        return fixed
-    else:
-        pass
+    async with aiohttp.ClientSession() as s:
+        creation_request = await s.post(api_url, data=params)
+        fixed = await creation_request.json()
+        if output:
+            return fixed
+        else:
+            pass
 
 
 async def mediawiki_login():
