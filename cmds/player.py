@@ -1,7 +1,7 @@
 from discord import User, Embed, File
 from discord.ext import commands
 
-import config_values
+from config_values import prefix, dir_launcher, launcher_name
 import constants
 import handlers.db_handler as db
 import utility.interactive_util as inter
@@ -21,32 +21,33 @@ class PlayerCog(commands.Cog):
         embed.colour = constants.color_codes["Info"]
         embed.description = "Да-да? Тут перечислены все мои команды для обычных игроков. Я, если что, не настоящий " \
                             "Галахад, а всего-лишь бот. "
-        embed.add_field(name="!подтвердитьвозраст",
+        embed.add_field(name=f"{prefix}подтвердитьвозраст",
                         value="**Описание:** интерактивная команда. Нужно сделать один раз для каждого пользователя. "
-                              "id.\n**Пример:** `!подтвердитьвозраст`",
+                              f"id.\n**Пример:**  `{prefix}подтвердитьвозраст`",
                         inline=False)
-        embed.add_field(name="!персонажи",
+        embed.add_field(name=f"{prefix}персонажи",
                         value="**Описание:** выводит всех персонажей указанного игрока.\n**Формат:** команда, "
                               "затем слапнутый игрок. Можно писать его имя пользователя (не ник) или его "
-                              "id.\n**Пример:** `!персонажи @John`",
+                              f"id.\n**Пример:**  `{prefix}персонажи @John`",
                         inline=False)
-        embed.add_field(name="!викиигрока",
+        embed.add_field(name=f"{prefix}викиигрока",
                         value="**Описание:** дает вики-ссылки на всех персонажей игрока.\n**Формат:** команда, "
-                              "затем аналогично пункту выше.\n**Пример:**  `!викиигрока @John`",
+                              f"затем аналогично пункту выше.\n**Пример:**  `{prefix}викиигрока @John`",
                         inline=False)
-        embed.add_field(name="!википерса",
+        embed.add_field(name=f"{prefix}википерса",
                         value="**Описание:** дает вики-ссылку на конкретного персонажа. Имя персонажа должно быть на "
-                              "латиннице.\n**Формат:** команда, затем имя персонажа\n**Пример:**  `!википерса John`",
+                              f"латиннице.\n**Формат:** команда, затем имя персонажа\n**Пример:**  `{prefix}википерса "
+                              f"John`",
                         inline=False)
-        embed.add_field(name="!пароль",
+        embed.add_field(name=f"{prefix}пароль",
                         value="**Описание:** позволяет сменить пароль. Работает только в личке.\n**Формат:** команда, "
-                              "затем имя персонажа, затем новый пароль.\n**Пример:**  `!пароль John q1w2e3`",
+                              f"затем имя персонажа, затем новый пароль.\n**Пример:**  `{prefix}пароль John q1w2e3`",
                         inline=False)
-        embed.add_field(name="!лаунчер",
+        embed.add_field(name=f"{prefix}лаунчер",
                         value="**Описание:** скидывает вам лаунчер в формате exe. Jar доступен у администрации. "
-                              "Работает только в личке.\n**Формат:** команда\n**Пример:**  `!лаунчер`",
+                              f"Работает только в личке.\n**Формат:** команда\n**Пример:**  `{prefix}лаунчер`",
                         inline=False)
-        embed.add_field(name="!скин или !скины",
+        embed.add_field(name=f"{prefix}скин или {prefix}скины",
                         value="**Описание:** интерактивная команда. Работает только в личке. Весь массив операций со "
                               "скинами, будь это их удаление, добавление и пр.\n**Формат:** "
                               'подсказывается по ходу, но можно забивать аргументы "наперед". Сначала указывается '
@@ -54,13 +55,14 @@ class PlayerCog(commands.Cog):
                               'строго контекстуально. Если это заливание, то нужно указать имя персонажа, затем '
                               'постфикс, ("Нет" считается отсутствием постфикса), затем нужно приложить пост с файлом. '
                               'Как уже было сказано, можно миксовать как угодно, например заранее написать '
-                              '**!скин залить Vasya armor** а следующим сообщением залить файл. А можно сразу все. А  '
-                              'можно просто **!скин залить Vasya**, а потом указать постфикс и отправить сообщение '
-                              'со скином.\n**Пример:** `!скин`',
+                              f'**{prefix}скин залить Vasya armor** а следующим сообщением залить файл. А можно сразу '
+                              f'все. А можно просто **{prefix}скин залить Vasya**, а потом указать постфикс и '
+                              f'отправить сообщение со скином.\n**Пример:** `{prefix}скин`',
                         inline=False)
         await ctx.send(embed=embed)
 
     @commands.command(name="подтвердитьвозраст")
+    @commands.guild_only()
     @commands.cooldown(1, 86400.0, commands.BucketType.user)
     @inter.exception_handler_decorator
     @check_admin_ban_decorator
@@ -131,8 +133,8 @@ class PlayerCog(commands.Cog):
     async def launcher(self, ctx):
         characters = db.get_all_characters_normal(ctx.message.author.id)
         if characters:
-            await ctx.send("Держи. Не потеряй.", file=File(fp=f"{config_values.dir_launcher}Launcher.exe",
-                                                           filename=config_values.launcher_name))
+            await ctx.send("Держи. Не потеряй.", file=File(fp=f"{dir_launcher}Launcher.exe",
+                                                           filename=launcher_name))
         else:
             await ctx.send("Не вижу у тебя персонажей. Зачем тебе лаунчер?")
 

@@ -5,7 +5,7 @@ import aiohttp
 from discord.ext import commands
 
 import handlers.db_handler as db
-from config_values import timeout
+from config_values import timeout, prefix
 from utility.discord_util import user_converter
 
 
@@ -25,7 +25,7 @@ def do_check_decorator(func):
     def do_check_wrapper(self, ctx, *args, **kwargs):
         def check(m):
             if m.author == ctx.author and m.channel == ctx.channel:
-                if re.match(f"^!.*|^<@!?{self.bot.user.id}>.*", m.content):
+                if re.match(f"^{prefix}.*|^<@!?{self.bot.user.id}>.*", m.content):
                     raise UserAlreadyInInteractiveCommand
                 else:
                     return True
@@ -179,6 +179,15 @@ async def input_raw_text(check, self, ctx, tip_text, error_text=None, subject=No
             continue
         return subject
 
+
+@do_check_decorator
+async def input_raw_text_no_checks(check, self, ctx, tip_text, subject=None):
+    if not subject:
+        await ctx.send(tip_text)
+    while True:
+        if not subject:
+            subject = await get_subject_if_none(self, check)
+        return subject
 
 @do_check_decorator
 async def input_url(check, self, ctx, tip_text, error_text, subject=None):

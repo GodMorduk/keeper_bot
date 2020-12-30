@@ -74,7 +74,7 @@ async def list_skins(ctx, character):
         for character in names:
             output += "`" + (str(character)) + "`"
             if names.index(character) != (len(names) - 1):
-                output += "`, "
+                output += ", "
         await ctx.send(output)
     else:
         await ctx.send("Я не могу сказать тебе о скинах персонажей, которых у тебя нет. ")

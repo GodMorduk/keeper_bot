@@ -22,30 +22,31 @@ class WikiMasterCog(commands.Cog):
         embed.colour = constants.color_codes["Info"]
         embed.title = ""
         embed.description = " "
-        embed.add_field(name="!вики-регистрация",
+        embed.add_field(name=f"{config_values.prefix}вики-регистрация",
                         value="**Описание:** регистрирует нового пользователя на вики.\n**Формат:** команда, "
-                              "имя нового аккаунта, пароль.\n**Пример:**  `!вики-регистрация John qwerty`",
+                              f"имя нового аккаунта, пароль.\n**Пример:**  `{config_values.prefix}"
+                              "вики-регистрация John qwerty`",
                         inline=False)
-        embed.add_field(name="!вики-бан",
+        embed.add_field(name=f"{config_values.prefix}вики-бан",
                         value="**Описание:** банит пользователя на вики. Все баны через эту команду "
                               "бессрочные.\n**Формат:** команда, имя аккаунта для бана, причина. \n**Пример:**  "
-                              "`!вики-бан John вандализм`",
+                              f"`{config_values.prefix}вики-бан John вандализм`",
                         inline=False)
-        embed.add_field(name="!вики-разбан",
+        embed.add_field(name=f"{config_values.prefix}вики-разбан",
                         value="**Описание:** разбанивает пользователя на вики.\n**Формат:** команда, имя аккаунта для "
-                              "разбана, причина.\n**Пример:**  `!вики-разбан John извинился`",
+                              f"разбана, причина.\n**Пример:**  `{config_values.prefix}вики-разбан John извинился`",
                         inline=False)
-        embed.add_field(name="!вики-пароль",
+        embed.add_field(name=f"{config_values.prefix}вики-пароль",
                         value="**Описание:** меняет пароль пользователю.\n**Формат:** команда, имя аккаунта для "
-                              "смены, пароль.\n**Пример:**  `!вики-пароль John qwerty123`",
+                              f"смены, пароль.\n**Пример:**  `{config_values.prefix}вики-пароль John qwerty123`",
                         inline=False)
-        embed.add_field(name="!вики-откат",
+        embed.add_field(name=f"{config_values.prefix}вики-откат",
                         value="**Описание:** откатывает последние правки пользователя на вики. Работает только на тех "
                               "страницах, последние правки на которых были сделаны откатываемым пользователем, "
                               "т.е. если после него страницы изменял кто-то еще, то они не будут откачены. Откатывает "
                               "вообще все, для более точного отката лучше действовать вручную через "
-                              "интерфейс.\n**Формат:** команда, имя аккаунта для отката.\n**Пример:**  `!вики-откат "
-                              "John`",
+                              "интерфейс.\n**Формат:** команда, имя аккаунта для отката.\n**Пример:**  `"
+                              f"{config_values.prefix}вики-откат John`",
                         inline=False)
         await ctx.send(embed=embed)
 
@@ -98,7 +99,7 @@ class WikiMasterCog(commands.Cog):
             pass
 
         username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username, True)
-        reason = await inter.input_raw_text(self, ctx, wiki_reason_tooltip, forbidden_chars, reason)
+        reason = await inter.input_raw_text_no_checks(self, ctx, wiki_reason_tooltip, reason)
 
         result = await mw.ban_wiki_account(username, reason)
         if result is True:
@@ -121,7 +122,7 @@ class WikiMasterCog(commands.Cog):
             pass
 
         username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username, True)
-        reason = await inter.input_raw_text(self, ctx, wiki_reason_tooltip, forbidden_chars, reason)
+        reason = await inter.input_raw_text_no_checks(self, ctx, wiki_reason_tooltip, reason)
 
         result = await mw.unban_wiki_account(username, reason)
         if result is True:
@@ -144,7 +145,7 @@ class WikiMasterCog(commands.Cog):
         except (IndexError, AttributeError):
             pass
 
-        what = await inter.one_or_another(self, ctx, wiki_check_tooltip, gm_int_what_error, what, "аккаунт")
+        what = await inter.one_or_another(self, ctx, wiki_check_tooltip, wiki_check_tooltip, what, "аккаунт")
 
         if what == "аккаунт":
             subject = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, subject, True)
