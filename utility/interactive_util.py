@@ -104,10 +104,11 @@ async def discord_user_get_id(check, self, ctx, tip_text, error_text, subject=No
                 await ctx.send(error_text)
                 subject = None
                 continue
-        if db.check_player_ban_by_id(subject):
+
+        if db.check_player_ban_by_id(subject.id):
             raise db.PlayerBannedForever
         else:
-            return subject
+            return subject.id
 
 
 @do_check_decorator

@@ -111,7 +111,7 @@ class PlayerCog(commands.Cog):
             await ctx.send("Пусто. Что-то не так вбито или такого персонажа нет.")
         else:
             user = await user_converter.convert(ctx, list_of_characters[0])
-            await ctx.send(f"Владелец этого персонажа - {user.name}#{user.discriminator}")
+            await ctx.send(f"Владелец этого персонажа - {user}")
 
     @commands.command(name="википерса")
     @commands.guild_only()
