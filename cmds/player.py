@@ -6,6 +6,7 @@ import constants
 import handlers.db_handler as db
 import utility.interactive_util as inter
 import utility.player_util as util
+from utility.discord_util import user_converter
 from lines import *
 from cmds.admin import check_admin_ban_decorator
 
@@ -88,7 +89,7 @@ class PlayerCog(commands.Cog):
 
     @commands.command(name="персонажи")
     @commands.guild_only()
-    async def characters(self, ctx, user: User = None):
+    async def get_characters(self, ctx, user: User = None):
         if not user:
             user = ctx.message.author
         list_of_characters = db.get_all_characters_normal(user.id)
@@ -101,6 +102,16 @@ class PlayerCog(commands.Cog):
                 if list_of_characters.index(character) != (len(list_of_characters) - 1):
                     output += ", "
             await ctx.send(output)
+
+    @commands.command(name="игрок")
+    @commands.guild_only()
+    async def get_player(self, ctx, character):
+        list_of_characters = db.get_player(character)
+        if not list_of_characters:
+            await ctx.send("Пусто. Что-то не так вбито или такого персонажа нет.")
+        else:
+            user = await user_converter.convert(ctx, list_of_characters[0])
+            await ctx.send(f"Владелец этого персонажа - {user.name}#{user.discriminator}")
 
     @commands.command(name="википерса")
     @commands.guild_only()
@@ -167,7 +178,7 @@ class PlayerCog(commands.Cog):
             await util.upload_skin(ctx, character, postfix, msg)
 
         elif action == "получить":
-            subject = await inter.input_raw_text(self, ctx, wiki_user_tooltip, forbidden_chars, subject)
+            subject = await inter.input_raw_text_ascii_only(self, ctx, wiki_user_tooltip, forbidden_chars, subject)
             await util.get_skin_link(ctx, subject)
         elif action == "получитьвсе":
             character = await inter.check_char(self, ctx, plr_skin_get_all_tooltip, plr_skin_get_all_error, subject)
@@ -176,7 +187,7 @@ class PlayerCog(commands.Cog):
             character = await inter.check_char(self, ctx, plr_skin_list_tooltip, plr_skin_list_error, subject)
             await util.list_skins(ctx, character)
         elif action == "уничтожить":
-            subject = await inter.input_raw_text(self, ctx, plr_skin_delete_all_tooltip, forbidden_chars, subject)
+            subject = await inter.input_raw_text_ascii_only(self, ctx, plr_skin_delete_all_tooltip, forbidden_chars, subject)
             await util.skins_eraser(ctx, subject)
 
 

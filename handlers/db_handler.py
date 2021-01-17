@@ -245,6 +245,11 @@ def is_such_char(character):
 
 
 @mysql_connection_decorator
+def get_player(character):
+    query = Character.select().where((Character.character == character))
+    return [character.discord_id for character in query]
+
+@mysql_connection_decorator
 def check_user_password(character, password):
     password = str.encode(password)
     try:

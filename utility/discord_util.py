@@ -6,7 +6,7 @@ from discord.ext import commands
 import config_values
 import constants
 
-user_converter = commands.MemberConverter()
+user_converter = commands.UserConverter()
 role_converter = commands.RoleConverter()
 
 

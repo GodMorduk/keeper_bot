@@ -75,13 +75,13 @@ async def get_subject_if_none(self, check, return_message_itself=False):
 # Сами модули
 
 @do_check_decorator
-async def user_or_pass(check, self, ctx, len_max, tip_text, error_text, subject=None, only_alpha=False):
+async def user_or_pass(check, self, ctx, len_max, tip_text, error_text, subject=None):
     if not subject:
         await ctx.send(tip_text)
     while True:
         if not subject:
             subject = await get_subject_if_none(self, check)
-        if len(subject) > len_max or subject.isascii() is False or (only_alpha and subject.isalpha() is False):
+        if len(subject) > len_max or subject.isascii() is False:
             await ctx.send(error_text)
             subject = None
             continue
@@ -89,20 +89,22 @@ async def user_or_pass(check, self, ctx, len_max, tip_text, error_text, subject=
 
 
 @do_check_decorator
-async def discord_user(check, self, ctx, tip_text, error_text, subject=None):
+async def discord_user_get_id(check, self, ctx, tip_text, error_text, subject=None):
     if not subject:
         await ctx.send(tip_text)
     while True:
         if not subject:
             subject = await get_subject_if_none(self, check)
-        try:
-            subject = await user_converter.convert(ctx, subject)
-        except commands.errors.MemberNotFound:
-            await ctx.send(error_text)
-            subject = None
-            continue
-
-        if db.check_player_ban_by_id(subject.id):
+        if len(subject) == 18 and subject.isdecimal():
+            pass
+        else:
+            try:
+                subject = await user_converter.convert(ctx, subject)
+            except commands.errors.MemberNotFound:
+                await ctx.send(error_text)
+                subject = None
+                continue
+        if db.check_player_ban_by_id(subject):
             raise db.PlayerBannedForever
         else:
             return subject
@@ -167,13 +169,13 @@ async def msg_with_attachment(check, self, ctx, tip_text, error_text, subject=No
 
 
 @do_check_decorator
-async def input_raw_text(check, self, ctx, tip_text, error_text=None, subject=None, check_if_alphabet=False):
+async def input_raw_text_ascii_only(check, self, ctx, tip_text, error_text=None, subject=None):
     if not subject:
         await ctx.send(tip_text)
     while True:
         if not subject:
             subject = await get_subject_if_none(self, check)
-        if subject.isascii() is False or (check_if_alphabet and subject.isalpha() is False):
+        if subject.isascii() is False:
             await ctx.send(error_text)
             subject = None
             continue
@@ -189,6 +191,7 @@ async def input_raw_text_no_checks(check, self, ctx, tip_text, subject=None):
             subject = await get_subject_if_none(self, check)
         return subject
 
+
 @do_check_decorator
 async def input_url(check, self, ctx, tip_text, error_text, subject=None):
     if not subject:
@@ -199,12 +202,11 @@ async def input_url(check, self, ctx, tip_text, error_text, subject=None):
         async with aiohttp.ClientSession() as session:
             try:
                 await session.get(subject)
-                await session.close()
             except (aiohttp.ClientConnectionError, aiohttp.InvalidURL):
                 await ctx.send(error_text)
                 subject = None
-                await session.close()
                 continue
+        await session.close()
         return subject
 
 

@@ -50,6 +50,13 @@ class WikiMasterCog(commands.Cog):
                         inline=False)
         await ctx.send(embed=embed)
 
+    @commands.command(name="вики-релог")
+    @commands.has_any_role(config_values.wiki_registrar_role, config_values.admin_role)
+    @commands.guild_only()
+    async def wiki_relog(self, ctx):
+        await mw.mediawiki_login()
+        await ctx.send("Я перелогинился на вики. Надеюсь это поможет.")
+
     @commands.command(name="вики-регистрация")
     @commands.has_any_role(config_values.wiki_registrar_role, config_values.admin_role)
     @commands.guild_only()
@@ -69,17 +76,17 @@ class WikiMasterCog(commands.Cog):
 
         username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username, True)
         password = await inter.user_or_pass(self, ctx, 50, wiki_password_tooltip, forbidden_chars, password)
-        discord_user = await inter.discord_user(self, ctx, wiki_registration_tooltip, wiki_registration_error, user)
+        discord_id = await inter.discord_user_get_id(self, ctx, wiki_registration_tooltip, wiki_registration_error, user)
 
         try:
-            db.get_if_age_confirmed(discord_user.id)
+            db.get_if_age_confirmed(discord_id)
         except db.AgeNotConfirmed:
             await ctx.send("Игрок не подтвердил возраст. Регистрация отменена.")
         else:
             result = await mw.create_wiki_account(username, password)
             if result is True:
                 await ctx.send("Аккаунт на вики успешно создан.")
-                db.add_new_wiki_account(user, discord_user.id)
+                db.add_new_wiki_account(user, discord_id)
             else:
                 await ctx.send(
                     "Аккаунт на вики создать не получилось. Сообщение от нашей милой MediaWiki:\n" + "```" + result +
@@ -156,8 +163,8 @@ class WikiMasterCog(commands.Cog):
                 await ctx.send(f"Владелец аккаунта {subject} это <@{result}>.")
 
         elif what == "игрока":
-            subject = await inter.discord_user(self, ctx, gm_int_user_tooltip, gm_int_user_error, subject)
-            result = db.check_all_accounts_by_owner(subject.id)
+            subject = await inter.discord_user_get_id(self, ctx, gm_int_user_tooltip, gm_int_user_error, subject)
+            result = db.check_all_accounts_by_owner(subject)
             if not result:
                 await ctx.send(f"У <@{subject.id}> нет аккаунтов на вики.")
             else:

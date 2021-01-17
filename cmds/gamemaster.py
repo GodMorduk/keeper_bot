@@ -23,7 +23,7 @@ async def del_check_ban_unban(self, ctx, start_text, to_do_with_char, to_do_with
         subject = await inter.check_char(self, ctx, gm_int_char_tooltip, gm_int_char_error, subject)
         await to_do_with_char(ctx, subject)
     elif what == "игрока":
-        subject = await inter.discord_user(self, ctx, gm_int_user_tooltip, gm_int_user_error, subject)
+        subject = await inter.discord_user_get_id(self, ctx, gm_int_user_tooltip, gm_int_user_error, subject)
         await to_do_with_user(ctx, subject)
 
 
@@ -109,9 +109,9 @@ class GameMasterCog(commands.Cog):
         except (IndexError, AttributeError):
             pass
 
-        character = await inter.input_raw_text_no_checks(self, ctx, plr_skin_postfix_tooltip, character)
+        character = await inter.user_or_pass(self, ctx, 15, gm_int_reg_char_tooltip, gm_int_reg_char_error, character)
         password = await inter.user_or_pass(self, ctx, 15, gm_int_reg_pass_tooltip, gm_int_reg_pass_error, password)
-        user = await inter.discord_user(self, ctx, point_on_user, gm_int_reg_user_error, user)
+        user = await inter.discord_user_get_id(self, ctx, point_on_user, gm_int_reg_user_error, user)
         wiki_link = await inter.input_url(self, ctx, gm_int_reg_wiki_tooltip, gm_int_reg_wiki_error, wiki_link)
 
         await util.registration(ctx, character, password, user, wiki_link)
