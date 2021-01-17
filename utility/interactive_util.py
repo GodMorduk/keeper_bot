@@ -100,15 +100,15 @@ async def discord_user_get_id(check, self, ctx, tip_text, error_text, subject=No
         else:
             try:
                 subject = await user_converter.convert(ctx, subject)
+                subject = subject.id
             except commands.errors.MemberNotFound:
                 await ctx.send(error_text)
                 subject = None
                 continue
-
-        if db.check_player_ban_by_id(subject.id):
+        if db.check_player_ban_by_id(subject):
             raise db.PlayerBannedForever
         else:
-            return subject.id
+            return subject
 
 
 @do_check_decorator
@@ -203,9 +203,11 @@ async def input_url(check, self, ctx, tip_text, error_text, subject=None):
         async with aiohttp.ClientSession() as session:
             try:
                 await session.get(subject)
+                await session.close()
             except (aiohttp.ClientConnectionError, aiohttp.InvalidURL):
                 await ctx.send(error_text)
                 subject = None
+                await session.close()
                 continue
         await session.close()
         return subject
