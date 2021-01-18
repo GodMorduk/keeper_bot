@@ -1,15 +1,21 @@
 import bcrypt
 import peewee as pw
+from playhouse.shortcuts import ReconnectMixin
 
 import config_values
 from utility.password_util import hash_password_string
 
+
+class ReconnectMySQLDatabase(ReconnectMixin, pw.MySQLDatabase):
+    pass
+
+
 category = "MySQL"
-db = pw.MySQLDatabase(database=config_values.db_name,
-                      user=config_values.db_username,
-                      password=config_values.db_password,
-                      host=config_values.db_address,
-                      port=config_values.db_port)
+db = ReconnectMySQLDatabase(database=config_values.db_name,
+                            user=config_values.db_username,
+                            password=config_values.db_password,
+                            host=config_values.db_address,
+                            port=config_values.db_port)
 
 
 class BaseModel(pw.Model):
@@ -247,7 +253,8 @@ def is_such_char(character):
 @mysql_connection_decorator
 def get_player(character):
     query = Character.select().where((Character.character == character))
-    return [character.discord_id for character in query]
+    return [char.discord_id for char in query]
+
 
 @mysql_connection_decorator
 def check_user_password(character, password):

@@ -5,7 +5,7 @@ import aiohttp
 from discord.ext import commands
 
 import handlers.db_handler as db
-from config_values import timeout, prefix
+from config_values import timeout, prefix, wiki_url
 from utility.discord_util import user_converter
 
 
@@ -194,22 +194,16 @@ async def input_raw_text_no_checks(check, self, ctx, tip_text, subject=None):
 
 
 @do_check_decorator
-async def input_url(check, self, ctx, tip_text, error_text, subject=None):
+async def input_wiki_link(check, self, ctx, tip_text, error_text, subject=None):
     if not subject:
         await ctx.send(tip_text)
     while True:
         if not subject:
             subject = await get_subject_if_none(self, check)
-        async with aiohttp.ClientSession() as session:
-            try:
-                await session.get(subject)
-                await session.close()
-            except (aiohttp.ClientConnectionError, aiohttp.InvalidURL):
-                await ctx.send(error_text)
-                subject = None
-                await session.close()
-                continue
-        await session.close()
+        if not subject.startswith(wiki_url):
+            await ctx.send(error_text)
+            subject = None
+            continue
         return subject
 
 

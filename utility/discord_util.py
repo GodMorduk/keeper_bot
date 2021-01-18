@@ -6,7 +6,7 @@ from discord.ext import commands
 import config_values
 import constants
 
-user_converter = commands.UserConverter()
+user_converter = commands.MemberConverter()
 role_converter = commands.RoleConverter()
 
 
@@ -37,9 +37,9 @@ class DiscordUtil(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.errors.CommandNotFound):
-            return  # из за префикса !, оверлап с командами карл-бота и зачем нам это логировать
+            return
         else:
-            print("Caught error! " + str(error))  # в консоль занести
+            print("Caught error! " + str(error))
             if config_values.log_enable:
                 await self.print_error_in_embed(ctx, is_error=True, body=error)
             if str(error).endswith("Cannot send an empty message"):  # потому что там ошибка bad request

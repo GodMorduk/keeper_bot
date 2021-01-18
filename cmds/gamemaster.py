@@ -112,7 +112,7 @@ class GameMasterCog(commands.Cog):
         character = await inter.user_or_pass(self, ctx, 15, gm_int_reg_char_tooltip, gm_int_reg_char_error, character)
         password = await inter.user_or_pass(self, ctx, 15, gm_int_reg_pass_tooltip, gm_int_reg_pass_error, password)
         user_id = await inter.discord_user_get_id(self, ctx, point_on_user, gm_int_reg_user_error, user)
-        wiki_link = await inter.input_url(self, ctx, gm_int_reg_wiki_tooltip, gm_int_reg_wiki_error, wiki_link)
+        wiki_link = await inter.input_wiki_link(self, ctx, gm_int_reg_wiki_tooltip, gm_int_reg_wiki_error, wiki_link)
         await util.registration(ctx, character, password, user_id, wiki_link)
 
     @commands.command(name="удалить")
