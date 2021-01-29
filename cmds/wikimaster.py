@@ -74,7 +74,7 @@ class WikiMasterCog(commands.Cog):
         except AttributeError:
             pass
 
-        username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username, True)
+        username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username)
         password = await inter.user_or_pass(self, ctx, 50, wiki_password_tooltip, forbidden_chars, password)
         discord_id = await inter.discord_user_get_id(self, ctx, wiki_registration_tooltip, wiki_registration_error, user)
 
@@ -105,7 +105,7 @@ class WikiMasterCog(commands.Cog):
         except (IndexError, AttributeError):
             pass
 
-        username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username, True)
+        username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username)
         reason = await inter.input_raw_text_no_checks(self, ctx, wiki_reason_tooltip, reason)
 
         result = await mw.ban_wiki_account(username, reason)
@@ -128,7 +128,7 @@ class WikiMasterCog(commands.Cog):
         except (IndexError, AttributeError):
             pass
 
-        username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username, True)
+        username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username)
         reason = await inter.input_raw_text_no_checks(self, ctx, wiki_reason_tooltip, reason)
 
         result = await mw.unban_wiki_account(username, reason)
@@ -155,7 +155,7 @@ class WikiMasterCog(commands.Cog):
         what = await inter.one_or_another(self, ctx, wiki_check_tooltip, wiki_check_tooltip, what, "аккаунт")
 
         if what == "аккаунт":
-            subject = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, subject, True)
+            subject = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, subject)
             result = db.check_owner_of_wiki_account(subject)
             if result is None:
                 await ctx.send("У меня нет информации по этому аккаунту. Это какая-то ошибка.")
@@ -188,7 +188,7 @@ class WikiMasterCog(commands.Cog):
         except (IndexError, AttributeError):
             pass
 
-        username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username, True)
+        username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username)
         password = await inter.user_or_pass(self, ctx, 50, wiki_password_tooltip, forbidden_chars, password)
 
         result = await mw.change_password(username, password)
@@ -208,7 +208,7 @@ class WikiMasterCog(commands.Cog):
         except (IndexError, AttributeError):
             pass
 
-        username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username, True)
+        username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username)
 
         result = await mw.rollback(username)
         if result.startswith("Processing"):
