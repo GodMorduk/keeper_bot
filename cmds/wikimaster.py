@@ -86,7 +86,7 @@ class WikiMasterCog(commands.Cog):
             result = await mw.create_wiki_account(username, password)
             if result is True:
                 await ctx.send("Аккаунт на вики успешно создан.")
-                db.add_new_wiki_account(user, discord_id)
+                db.add_new_wiki_account(username, discord_id)
             else:
                 await ctx.send(
                     "Аккаунт на вики создать не получилось. Сообщение от нашей милой MediaWiki:\n" + "```" + result +
@@ -121,17 +121,14 @@ class WikiMasterCog(commands.Cog):
     @inter.exception_handler_decorator
     async def wiki_unban(self, ctx, *args):
         username = None
-        reason = None
         try:
             username = args[0][0]
-            reason = args[0][1]
         except (IndexError, AttributeError):
             pass
 
         username = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, username)
-        reason = await inter.input_raw_text_no_checks(self, ctx, wiki_reason_tooltip, reason)
 
-        result = await mw.unban_wiki_account(username, reason)
+        result = await mw.unban_wiki_account(username)
         if result is True:
             await ctx.send("Аккаунт на вики успешно разбанен.")
         else:
@@ -152,9 +149,9 @@ class WikiMasterCog(commands.Cog):
         except (IndexError, AttributeError):
             pass
 
-        what = await inter.one_or_another(self, ctx, wiki_check_tooltip, wiki_check_tooltip, what, "аккаунт")
+        what = await inter.one_or_another(self, ctx, wiki_check_tooltip, wiki_check_tooltip, what, "аккаунта")
 
-        if what == "аккаунт":
+        if what == "аккаунта":
             subject = await inter.user_or_pass(self, ctx, 50, wiki_user_tooltip, forbidden_chars, subject)
             result = db.check_owner_of_wiki_account(subject)
             if result is None:
@@ -166,14 +163,14 @@ class WikiMasterCog(commands.Cog):
             subject = await inter.discord_user_get_id(self, ctx, gm_int_user_tooltip, gm_int_user_error, subject)
             result = db.check_all_accounts_by_owner(subject)
             if not result:
-                await ctx.send(f"У <@{subject.id}> нет аккаунтов на вики.")
+                await ctx.send(f"У <@{subject}> нет аккаунтов на вики.")
             else:
                 output = ""
                 for character in result:
                     output += (str(character))
                     if result.index(character) != (len(result) - 1):
                         output += (str(character) + ", ")
-                await ctx.send(f"У <@{subject.id}> следующие аккаунты на вики: " + output)
+                await ctx.send(f"У <@{subject}> следующие аккаунты на вики: " + output)
 
     @commands.command(name="вики-пароль")
     @commands.has_any_role(config_values.wiki_registrar_role, config_values.admin_role)

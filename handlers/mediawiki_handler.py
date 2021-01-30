@@ -53,63 +53,101 @@ async def mediawiki_login():
 
 
 async def create_wiki_account(username, password):
-    creation_token = await create_a_token(token_type="createaccount")
+    retry = False
 
-    creation_params = {
-        'action': "createaccount",
-        'createtoken': creation_token,
-        'username': username,
-        'password': password,
-        'retype': password,
-        'createreturnurl': wiki_url,
-        'format': "json"
-    }
+    while True:
+        creation_token = await create_a_token(token_type="createaccount")
 
-    creation_data = await proceed_request_and_return_as_data(creation_params)
+        creation_params = {
+            'action': "createaccount",
+            'createtoken': creation_token,
+            'username': username,
+            'password': password,
+            'retype': password,
+            'createreturnurl': wiki_url,
+            'format': "json",
+            'assert': 'user'
+        }
 
-    if creation_data['createaccount']['status'] == "FAIL":
-        return creation_data['createaccount']['message']
-    else:
-        return True
+        creation_data = await proceed_request_and_return_as_data(creation_params)
+
+        try:
+            if (creation_data['error']['code'] == 'assertuserfailed') and retry is False:
+                retry = True
+                await mediawiki_login()
+                print("Я перелогинился.")
+                continue
+            elif (creation_data['error']['code'] == 'assertuserfailed') and retry:
+                return "Я не залогинен, хотя я попытался исправить это самостоятельно. Попробуйте через !вики-релог"
+        except KeyError:
+            pass
+
+        if creation_data['createaccount']['status'] == "FAIL":
+            return creation_data['createaccount']['message']
+        else:
+            return True
 
 
 async def ban_wiki_account(username, reason):
-    ban_token = await create_a_token()
+    retry = False
 
-    ban_params = {
-        "action": "block",
-        "user": username,
-        "expiry": "never",
-        "reason": reason,
-        "token": ban_token,
-        "format": "json"
-    }
+    while True:
+        ban_token = await create_a_token()
 
-    ban_data = await proceed_request_and_return_as_data(ban_params)
+        ban_params = {
+            "action": "block",
+            "user": username,
+            "expiry": "never",
+            "reason": reason,
+            "token": ban_token,
+            "format": "json",
+            'assert': 'user'
+        }
 
-    if list(ban_data.keys())[0] == "error":
-        return ban_data['error']['info']
-    else:
-        return True
+        ban_data = await proceed_request_and_return_as_data(ban_params)
+
+        if list(ban_data.keys())[0] == "error":
+            if (ban_data['error']['code'] == 'assertuserfailed') and retry is False:
+                retry = True
+                await mediawiki_login()
+                print("Я перелогинился.")
+                continue
+            elif (ban_data['error']['code'] == 'assertuserfailed') and retry:
+                return "Я не залогинен, хотя я попытался исправить это самостоятельно. Попробуйте !вики-релог?"
+            else:
+                return ban_data['error']['info']
+        else:
+            return True
 
 
-async def unban_wiki_account(username, reason):
-    unban_token = await create_a_token()
+async def unban_wiki_account(username):
+    retry = False
 
-    unban_params = {
-        "action": "unblock",
-        "user": username,
-        "reason": reason,
-        "token": unban_token,
-        "format": "json"
-    }
+    while True:
+        unban_token = await create_a_token()
 
-    unban_data = await proceed_request_and_return_as_data(unban_params)
+        unban_params = {
+            "action": "unblock",
+            "user": username,
+            "token": unban_token,
+            "format": "json",
+            'assert': 'user'
+        }
 
-    if list(unban_data.keys())[0] == "error":
-        return unban_data['error']['info']
-    else:
-        return True
+        unban_data = await proceed_request_and_return_as_data(unban_params)
+
+        if list(unban_data.keys())[0] == "error":
+            if (unban_data['error']['code'] == 'assertuserfailed') and retry is False:
+                retry = True
+                await mediawiki_login()
+                print("Я перелогинился.")
+                continue
+            elif (unban_data['error']['code'] == 'assertuserfailed') and retry:
+                return "Я не залогинен, хотя я попытался исправить это самостоятельно. Попробуйте !вики-релог?"
+            else:
+                return unban_data['error']['info']
+        else:
+            return True
 
 
 async def change_password(username, password):

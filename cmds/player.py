@@ -153,6 +153,7 @@ class PlayerCog(commands.Cog):
 
     @commands.command(aliases=['скин', 'скины'])
     @inter.exception_handler_decorator
+    @check_admin_ban_decorator
     async def skins_ultimate(self, ctx, *args):
 
         action = None
