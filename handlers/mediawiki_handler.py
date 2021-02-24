@@ -75,7 +75,6 @@ async def create_wiki_account(username, password):
             if (creation_data['error']['code'] == 'assertuserfailed') and retry is False:
                 retry = True
                 await mediawiki_login()
-                print("Я перелогинился.")
                 continue
             elif (creation_data['error']['code'] == 'assertuserfailed') and retry:
                 return "Я не залогинен, хотя я попытался исправить это самостоятельно. Попробуйте через !вики-релог"
@@ -110,7 +109,6 @@ async def ban_wiki_account(username, reason):
             if (ban_data['error']['code'] == 'assertuserfailed') and retry is False:
                 retry = True
                 await mediawiki_login()
-                print("Я перелогинился.")
                 continue
             elif (ban_data['error']['code'] == 'assertuserfailed') and retry:
                 return "Я не залогинен, хотя я попытался исправить это самостоятельно. Попробуйте !вики-релог?"
@@ -140,7 +138,6 @@ async def unban_wiki_account(username):
             if (unban_data['error']['code'] == 'assertuserfailed') and retry is False:
                 retry = True
                 await mediawiki_login()
-                print("Я перелогинился.")
                 continue
             elif (unban_data['error']['code'] == 'assertuserfailed') and retry:
                 return "Я не залогинен, хотя я попытался исправить это самостоятельно. Попробуйте !вики-релог?"

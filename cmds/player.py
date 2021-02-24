@@ -1,14 +1,16 @@
 from discord import User, Embed, File
 from discord.ext import commands
 
-from config_values import prefix, dir_launcher, launcher_name, bot_name, bot_genitive_name
 import constants
-import handlers.db_handler as db
+import handlers.mongo_handler as mng
+import handlers.mysql_handler as db
 import utility.interactive_util as inter
+import utility.mongo_util as mng_util
 import utility.player_util as util
-from utility.discord_util import user_converter
-from lines import *
 from cmds.admin import check_admin_ban_decorator
+from config_values import prefix, dir_launcher, launcher_name, bot_name, bot_genitive_name, registrar_role, admin_role
+from lines import *
+from utility.discord_util import user_converter
 
 
 class PlayerCog(commands.Cog):
@@ -177,9 +179,8 @@ class PlayerCog(commands.Cog):
             postfix = await inter.input_raw_text_no_checks(self, ctx, plr_skin_postfix_tooltip, postfix)
             msg = await inter.msg_with_attachment(self, ctx, plr_skin_att_tooltip, plr_skin_att_error, attach_msg)
             await util.upload_skin(ctx, character, postfix, msg)
-
         elif action == "получить":
-            subject = await inter.input_raw_text_ascii_only(self, ctx, wiki_user_tooltip, forbidden_chars, subject)
+            subject = await inter.input_raw_text_ascii(self, ctx, wiki_user_tooltip, forbidden_chars, subject)
             await util.get_skin_link(ctx, subject)
         elif action == "получитьвсе":
             character = await inter.check_char(self, ctx, plr_skin_get_all_tooltip, plr_skin_get_all_error, subject)
@@ -188,8 +189,56 @@ class PlayerCog(commands.Cog):
             character = await inter.check_char(self, ctx, plr_skin_list_tooltip, plr_skin_list_error, subject)
             await util.list_skins(ctx, character)
         elif action == "уничтожить":
-            subject = await inter.input_raw_text_ascii_only(self, ctx, plr_skin_delete_all_tooltip, forbidden_chars, subject)
+            subject = await inter.input_raw_text_ascii(self, ctx, plr_skin_delete_all_tooltip, forbidden_chars, subject)
             await util.skins_eraser(ctx, subject)
+
+    @commands.command(name="персонаж")
+    @commands.guild_only()
+    async def print_char_stats(self, ctx, character):
+        stats_dict = mng.get({"character": character})
+        await ctx.send(embed=mng_util.beautify_char_stats(stats_dict))
+
+    @commands.command(name="параметры")
+    @commands.guild_only()
+    async def print_all_parameters(self, ctx):
+        await ctx.send(embed=mng_util.beautify_output_stats_names())
+
+    @commands.command(name="статы")
+    @commands.guild_only()
+    @inter.exception_handler_decorator
+    @mng.exception_mongo_handler_decorator
+    async def change_char_stats(self, ctx, *args):
+
+        character = None
+        ctg = None
+        name = None
+        mod = None
+
+        try:
+            character = args[0][0][0]
+            ctg = args[0][0][1]
+            name = args[0][0][2]
+            mod = args[0][0][3]
+        except (IndexError, AttributeError):
+            pass
+
+        character = await inter.user_or_pass(self, ctx, 15, stats_char_tooltip, gm_int_reg_char_error, character)
+        ctg_rus, ctg = await inter.input_char_category(self, ctx, stats_category_tooltip, stats_category_error, ctg)
+        name_rus, name = await inter.input_char_stat(self, ctx, stats_name_tooltip, stats_name_error, ctg, name)
+        mod = await inter.input_stat_number(self, ctx, stats_mod_tooltip, stats_mod_error, mod)
+
+        stats = mng.get({"character": character})
+
+        if any(x in [r.id for r in ctx.author.roles] for x in [registrar_role, admin_role]):
+            if ctg_rus == "особое":
+                await ctx.send(f"Теперь {name_rus} {mng.change_stat_gm(stats, ctg, name, mod)}.")
+            else:
+                await ctx.send(f"Теперь {ctg_rus} {name_rus} равен {mng.change_stat_gm(stats, ctg, name, mod)}.")
+        else:
+            if str(ctx.author.id) != stats["discord_user"]:
+                await ctx.send("У тебя нет такого персонажа. Отмена.")
+            else:
+                await ctx.send(f"Теперь {ctg_rus} {name_rus} равен {mng.change_stat(stats, ctg, name, mod)}.")
 
 
 def setup(bot):

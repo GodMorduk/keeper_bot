@@ -6,7 +6,7 @@ import aiofiles
 import aiohttp
 
 import config_values
-import handlers.db_handler as db
+import handlers.mysql_handler as db
 
 
 async def upload_skin(ctx, character, postfix, skin_message=None):

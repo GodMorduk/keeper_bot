@@ -3,7 +3,8 @@ from discord.ext import commands
 
 import config_values
 import constants
-import handlers.db_handler as db
+import handlers.mongo_handler as mng
+import handlers.mysql_handler as db
 import utility.gamemaster_util as util
 import utility.interactive_util as inter
 from lines import *
@@ -184,6 +185,29 @@ class GameMasterCog(commands.Cog):
             await ctx.send(output)
         else:
             await ctx.send("В бане пусто. И такое бывает.")
+
+    @commands.command(name="обнулитьперсонажа")
+    @commands.guild_only()
+    @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
+    async def reset_char_stats(self, ctx, char_name):
+        discord_user = mng.get({"character": char_name})["discord_user"]
+        mng.delete({"character": char_name})
+        mng.create_new_character(char_name, discord_user)
+        await ctx.send("Персонаж успешно обнулен.")
+
+    @commands.command(name="создатьперсонажа")
+    @commands.guild_only()
+    @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
+    async def create_char_stats(self, ctx, char_name, discord_id):
+        mng.create_new_character(char_name, discord_id)
+        await ctx.send("Персонаж успешно создан.")
+
+    @commands.command(name="удалитьперсонажа")
+    @commands.guild_only()
+    @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
+    async def delete_char_stats(self, ctx, char_name):
+        mng.delete({"character": char_name})
+        await ctx.send("Персонаж успешно удален.")
 
 
 def setup(bot):

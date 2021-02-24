@@ -1,6 +1,7 @@
 import peewee
 
-import handlers.db_handler as db
+import handlers.mongo_handler as mng
+import handlers.mysql_handler as db
 
 
 async def registration(ctx, character, password, user, wiki_link):
@@ -14,6 +15,7 @@ async def registration(ctx, character, password, user, wiki_link):
         if query == 0:
             await ctx.send("Что-то пошло не так. Свяжитесь с администрацией.")
         else:
+            mng.create_new_character(character, user)
             await ctx.send(f"Персонаж успешно зарегистрирован! Это уже {query} персонаж.")
 
 
@@ -22,14 +24,18 @@ async def delete_char(ctx, subject):
     if result == 0:
         await ctx.send("Что-то не так. Может персонажа уже нет или ты неправильно его вбил?")
     else:
+        mng.delete({"character": subject})
         await ctx.send("Персонаж успешно удален.")
 
 
 async def delete_user(ctx, subject):
+    all_chars = db.get_all_characters(subject)
     result = db.remove_every_character(subject)
     if result == 0:
         await ctx.send("Что-то не так. Может у этого игрока уже нет персонажей?")
     else:
+        for char in all_chars:
+            mng.delete({"character": char})
         await ctx.send(f"**Все** персонажи <@{subject}> успешно удалены.")
 
 

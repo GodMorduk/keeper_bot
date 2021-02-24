@@ -11,11 +11,17 @@ owner_id = config["Discord"].getint("owner_id")
 player_role_id = config["Discord"].getint("player_role_id")
 timeout = config["Discord"].getfloat("timeout_max_time")
 
-db_address = config["MySQL"]["address"]
-db_username = config["MySQL"]["username"]
-db_password = config["MySQL"]["password"]
-db_name = config["MySQL"]["db"]
-db_port = config["MySQL"].getint("port")
+db_address = config["Database"]["address"]
+
+mysql_username = config["MySQL"]["username"]
+mysql_password = config["MySQL"]["password"]
+mysql_name = config["MySQL"]["name"]
+mysql_port = config["MySQL"].getint("port")
+
+mongodb_username = config["MongoDB"]["username"]
+mongodb_password = config["MongoDB"]["password"]
+mongodb_name = config["MongoDB"]["name"]
+mongodb_port = config["MongoDB"].getint("port")
 
 dir_skins = config["Game"]["dir_skins"]
 dir_launcher = config["Game"]["dir_launcher"]

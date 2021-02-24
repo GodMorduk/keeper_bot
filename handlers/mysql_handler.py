@@ -11,11 +11,11 @@ class ReconnectMySQLDatabase(ReconnectMixin, pw.MySQLDatabase):
 
 
 category = "MySQL"
-db = ReconnectMySQLDatabase(database=config_values.db_name,
-                            user=config_values.db_username,
-                            password=config_values.db_password,
+db = ReconnectMySQLDatabase(database=config_values.mysql_name,
+                            user=config_values.mysql_username,
+                            password=config_values.mysql_password,
                             host=config_values.db_address,
-                            port=config_values.db_port)
+                            port=config_values.mysql_port)
 
 
 class BaseModel(pw.Model):
@@ -168,6 +168,12 @@ def remove_every_character(discord_id):
 @mysql_connection_decorator
 def get_all_characters_normal(discord_id):
     query = Character.select().where((Character.discord_id == discord_id) & (Character.banned == 0))
+    return [player.character for player in query]
+
+
+@mysql_connection_decorator
+def get_all_characters(discord_id):
+    query = Character.select().where(Character.discord_id == discord_id)
     return [player.character for player in query]
 
 

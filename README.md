@@ -5,11 +5,13 @@ Your ultimate solution if you are me.
 ## Dependency
 
 * Python 3.7.7+
-* discord.py 1.5.0
+* discord.py 1.6.0
 * peewee 3.13.3
 * aiofiles 0.5.0
 * aiohttp 3.6.2
 * bcrypt 3.2.0
+* pymongo 3.11.2
+
 
 ## Что он уже умеет
 
@@ -74,6 +76,7 @@ Your ultimate solution if you are me.
 * [x] Валидация логпассов и ссылок.
 * [x] Подтверждение возраста для новых учеток Дискорда.
 * [x] Проверка учеток на вики по имени пользователя.
+* [x] Персонажи в монге.
 
 # Не туду, но какие-то места для улучшения
 

@@ -1,12 +1,12 @@
 import asyncio
 import re
 
-import aiohttp
 from discord.ext import commands
 
-import handlers.db_handler as db
+import handlers.mysql_handler as db
 from config_values import timeout, prefix, wiki_url
 from utility.discord_util import user_converter
+from utility.mongo_util import dict_category, dict_skills, dict_attrs, dict_efforts, dict_tides, dict_special
 
 
 class CommandIsCancelled(commands.CommandError):
@@ -170,7 +170,7 @@ async def msg_with_attachment(check, self, ctx, tip_text, error_text, subject=No
 
 
 @do_check_decorator
-async def input_raw_text_ascii_only(check, self, ctx, tip_text, error_text=None, subject=None):
+async def input_raw_text_ascii(check, self, ctx, tip_text, error_text=None, subject=None):
     if not subject:
         await ctx.send(tip_text)
     while True:
@@ -225,4 +225,69 @@ async def age_confirmation(check, self, ctx, error_text):
             return True
         else:
             mistakes += 1
+            continue
+
+
+# Персонажное
+
+@do_check_decorator
+async def input_char_category(check, self, ctx, tip_text, error_text, subject=None):
+    if not subject:
+        await ctx.send(tip_text)
+    while True:
+        if not subject:
+            subject = await get_subject_if_none(self, check)
+        subject = subject.lower()
+        try:
+            subject_eng = dict_category[subject]
+            return subject, subject_eng
+        except KeyError:
+            await ctx.send(error_text)
+            subject = None
+            continue
+
+
+@do_check_decorator
+async def input_char_stat(check, self, ctx, tip_text, error_text, category, subject=None):
+    if not subject:
+        await ctx.send(tip_text)
+    while True:
+        if not subject:
+            subject = await get_subject_if_none(self, check)
+        subject = subject.lower()
+        try:
+            if category == "skills":
+                subject_eng = dict_skills[subject]
+                return subject, subject_eng
+            elif category == "attributes":
+                subject_eng = dict_attrs[subject]
+                return subject, subject_eng
+            elif category == "efforts":
+                subject_eng = dict_efforts[subject]
+                return subject, subject_eng
+            elif category == "tides":
+                subject_eng = dict_tides[subject]
+                return subject, subject_eng
+            elif category == "special_stats":
+                subject_eng = dict_special[subject]
+                return subject, subject_eng
+        except KeyError:
+            await ctx.send(error_text)
+            subject = None
+            continue
+
+
+@do_check_decorator
+async def input_stat_number(check, self, ctx, tip_text, error_text, subject=None):
+    if not subject:
+        await ctx.send(tip_text)
+    while True:
+        if not subject:
+            subject = await get_subject_if_none(self, check)
+        try:
+            int(subject)
+            return subject
+        except ValueError:
+            await ctx.send(error_text)
+            subject = None
             continue

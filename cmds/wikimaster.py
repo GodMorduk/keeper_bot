@@ -3,7 +3,7 @@ from discord.ext import commands
 
 import config_values
 import constants
-import handlers.db_handler as db
+import handlers.mysql_handler as db
 import handlers.mediawiki_handler as mw
 import utility.interactive_util as inter
 from lines import *

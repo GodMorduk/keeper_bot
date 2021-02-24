@@ -7,11 +7,9 @@ from handlers.config_handler import initialize_config
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
-
 if __name__ == '__main__':
     intents = Intents.default()
     intents.members = True
-
     try:
         from handlers.mediawiki_handler import mediawiki_login
         from config_values import token, prefix

@@ -3,7 +3,7 @@ from discord.ext import commands
 
 import config_values
 import constants
-import handlers.db_handler as db
+import handlers.mysql_handler as db
 from utility.interactive_util import user_converter
 
 
@@ -109,6 +109,7 @@ class AdminCog(commands.Cog):
             subject = ctx.message.author
 
         result = db.ban_player_by_id(subject.id)
+        db.ban_player(subject.id)
 
         if not result:
             await ctx.send("Что-то пошло не так. Возможно, он уже забанен?")

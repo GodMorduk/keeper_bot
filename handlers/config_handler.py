@@ -16,12 +16,18 @@ def create_config(path):
     config["Discord"]["owner_id"] = "enter owner id here"
     config["Discord"]["player_role_id"] = "enter player role id here"
     config["Discord"]["timeout_max_time"] = "enter interactive commands max timeout"
-    config.add_section("MySQL")
+    config.add_section("Database")
     config["MySQL"]["address"] = "localhost"
-    config["MySQL"]["username"] = "db username"
-    config["MySQL"]["password"] = "db password"
+    config.add_section("MySQL")
+    config["MySQL"]["username"] = "mysql username"
+    config["MySQL"]["password"] = "mysql password"
     config["MySQL"]["db"] = "database name"
     config["MySQL"]["port"] = "3306"
+    config.add_section("MongoDB")
+    config["MongoDB"]["username"] = "mongodb username"
+    config["MongoDB"]["password"] = "mongodb password"
+    config["MongoDB"]["db"] = "mongodb database name"
+    config["MongoDB"]["port"] = "27017"
     config.add_section("Game")
     config["Game"]["dir_skins"] = "path to skins folder"
     config["Game"]["dir_launcher"] = "path to launcher file"
