@@ -78,9 +78,7 @@ class WikiMasterCog(commands.Cog):
         password = await inter.user_or_pass(self, ctx, 50, wiki_password_tooltip, forbidden_chars, password)
         discord_id = await inter.discord_user_get_id(self, ctx, wiki_registration_tooltip, wiki_registration_error, user)
 
-        try:
-            db.get_if_age_confirmed(discord_id)
-        except db.AgeNotConfirmed:
+        if db.get_if_age_confirmed(discord_id) is False:
             await ctx.send("Игрок не подтвердил возраст. Регистрация отменена.")
         else:
             result = await mw.create_wiki_account(username, password)
