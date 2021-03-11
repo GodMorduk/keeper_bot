@@ -77,11 +77,8 @@ class PlayerBannedForever(Exception):
 
 @mysql_connection_decorator
 def add_new_wiki_account(wiki_account, discord_id):
-    if not get_if_age_confirmed(discord_id):
-        raise AgeNotConfirmed
-    else:
-        query = WikiUser.create(wiki_account=wiki_account, discord_id=discord_id)
-        return query
+    query = WikiUser.create(wiki_account=wiki_account, discord_id=discord_id)
+    return query
 
 
 @mysql_connection_decorator

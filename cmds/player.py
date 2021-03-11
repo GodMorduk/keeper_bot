@@ -7,6 +7,7 @@ import handlers.mysql_handler as db
 import utility.interactive_util as inter
 import utility.mongo_util as mng_util
 import utility.player_util as util
+import utility.password_util as pswd
 from cmds.admin import check_admin_ban_decorator
 from config_values import prefix, dir_launcher, launcher_name, bot_name, bot_genitive_name, registrar_role, admin_role
 from lines import *
@@ -240,6 +241,10 @@ class PlayerCog(commands.Cog):
             else:
                 await ctx.send(f"Теперь {ctg_rus} {name_rus} равен {mng.change_stat(stats, ctg, name, mod)}.")
 
+    @commands.command(name="сгенерироватьпароль")
+    @commands.guild_only()
+    async def gen_password(self, ctx, *args):
+        await ctx.send(f"Сгенерированный пароль: `{pswd.generate_password()}`")
 
 def setup(bot):
     bot.add_cog(PlayerCog(bot))
