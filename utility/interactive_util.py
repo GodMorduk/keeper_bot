@@ -7,7 +7,7 @@ import handlers.mysql_handler as db
 from config_values import timeout, prefix, wiki_url
 from utility.discord_util import user_converter
 from utility.mongo_util import dict_category, dict_skills, dict_attrs, dict_efforts, dict_tides, dict_special
-
+from lines import plr_rule_confirmation_tip, plr_age_confirmation_tip, plr_age_confirmation_error
 
 class CommandIsCancelled(commands.CommandError):
     pass
@@ -210,19 +210,30 @@ async def input_wiki_link(check, self, ctx, tip_text, error_text, subject=None):
 # Особое, поскольку без первого раза и с ошибками
 
 @do_check_decorator
-async def age_confirmation(check, self, ctx, error_text):
+async def age_confirmation(check, self, ctx):
     mistakes = 0
     while True:
         if mistakes == 3:
             await ctx.send("Ты три раза написал неправильно. Думаю, на сегодня с тебя хватит. Отменяю.")
             raise MaxNumberOfTriesReached()
         if mistakes > 0:
-            await ctx.send(error_text)
-        result = await self.bot.wait_for('message', timeout=timeout, check=check)
+            await ctx.send(plr_age_confirmation_error)
+
+        await ctx.send(plr_age_confirmation_tip)
+        result = await self.bot.wait_for('message', timeout=3600, check=check)
         if result.content.lower() == "отмена":
             raise CommandIsCancelled()
         elif result.content.lower().strip(".") == "подтверждаю, что мне исполнилось 18 лет и я совершеннолетний":
-            return True
+            await ctx.send(plr_rule_confirmation_tip)
+            result = await self.bot.wait_for('message', timeout=3600, check=check)
+            if result.content.lower() == "отмена":
+                raise CommandIsCancelled()
+            elif result.content.lower().strip(".") == "я ознакомился с правилами проекта, с ними полностью согласен " \
+                                                      "и добровольно обязуюсь их соблюдать":
+                return True
+            else:
+                mistakes += 1
+                continue
         else:
             mistakes += 1
             continue

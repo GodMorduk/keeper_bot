@@ -6,8 +6,8 @@ import handlers.mongo_handler as mng
 import handlers.mysql_handler as db
 import utility.interactive_util as inter
 import utility.mongo_util as mng_util
-import utility.player_util as util
 import utility.password_util as pswd
+import utility.player_util as util
 from cmds.admin import check_admin_ban_decorator
 from config_values import prefix, dir_launcher, launcher_name, bot_name, bot_genitive_name, registrar_role, admin_role
 from lines import *
@@ -63,6 +63,20 @@ class PlayerCog(commands.Cog):
                               f'все. А можно просто **{prefix}скин залить Vasya**, а потом указать постфикс и '
                               f'отправить сообщение со скином.\n**Пример:** `{prefix}скин`',
                         inline=False)
+        embed.add_field(name=f"{prefix}персонаж",
+                        value="**Описание:** выводит всю информацию о персонаже. "
+                              f"Работает только в личке.\n**Формат:** команда, затем имя персонажа\n"
+                              f"**Пример:**  `{prefix}персонаж John`",
+                        inline=False)
+        embed.add_field(name=f"параметры",
+                        value="**Описание:** выводит все возможные опции для персонажа.`w"
+                              f"\n**Формат:** команда\n**Пример:**  `{prefix}параметры`",
+                        inline=False)
+        embed.add_field(name=f"параметры",
+                        value="**Описание:** интерактивная команда. Вбейте ее и делайте согласно подсказкам. Можно "
+                              "вбивать сразу полностью, если вы и так знаете, что писать.\n"
+                              f"\n**Формат:** команда\n**Пример:**  `{prefix}статы`",
+                        inline=False)
         await ctx.send(embed=embed)
 
     @commands.command(name="подтвердитьвозраст")
@@ -81,8 +95,7 @@ class PlayerCog(commands.Cog):
             await ctx.send(plr_age_confirmation_already)
             ctx.command.reset_cooldown(ctx)
         else:
-            await ctx.send(plr_age_confirmation_tip)
-            result = await inter.age_confirmation(self, ctx, plr_age_confirmation_error)
+            result = await inter.age_confirmation(self, ctx)
             if result is True:
                 db.confirm_age(ctx.message.author.id)
                 await ctx.send("Возраст подтвержден. Хорошей игры.")
@@ -245,6 +258,7 @@ class PlayerCog(commands.Cog):
     @commands.guild_only()
     async def gen_password(self, ctx, *args):
         await ctx.send(f"Сгенерированный пароль: `{pswd.generate_password()}`")
+
 
 def setup(bot):
     bot.add_cog(PlayerCog(bot))
