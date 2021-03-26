@@ -229,7 +229,8 @@ async def age_confirmation(check, self, ctx):
             if result.content.lower() == "отмена":
                 raise CommandIsCancelled()
             elif result.content.lower().strip(".") == "я ознакомился с правилами проекта, с ними полностью согласен " \
-                                                      "и добровольно обязуюсь их соблюдать":
+                                                      "и обязуюсь их соблюдать, а так же безоговорочно признаю за " \
+                                                      "администрацией проекта право на их интерпретацию":
                 return True
             else:
                 mistakes += 1
