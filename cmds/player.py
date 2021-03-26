@@ -9,7 +9,8 @@ import utility.mongo_util as mng_util
 import utility.password_util as pswd
 import utility.player_util as util
 from cmds.admin import check_admin_ban_decorator
-from config_values import prefix, dir_launcher, launcher_name, bot_name, bot_genitive_name, registrar_role, admin_role
+from config_values import prefix, dir_launcher, launcher_name, bot_name, bot_genitive_name, registrar_role, admin_role, \
+    age_confirmation_categories
 from lines import *
 from utility.discord_util import user_converter
 
@@ -87,21 +88,30 @@ class PlayerCog(commands.Cog):
     async def age_confirmation(self, ctx, *args):
 
         try:
-            current_state = db.get_if_age_confirmed(ctx.message.author.id)
-        except db.AgeNotConfirmed:
-            current_state = False
+            category_id = str(ctx.channel.category.id)
+        except AttributeError:
+            category_id = None
 
-        if current_state:
-            await ctx.send(plr_age_confirmation_already)
-            ctx.command.reset_cooldown(ctx)
+        if category_id not in age_confirmation_categories:
+            await ctx.send("Не-а. Это можно делать только в тикетах реги (на вики или внутри игры), больше нигде.")
+
         else:
-            result = await inter.age_confirmation(self, ctx)
-            if result is True:
-                db.confirm_age(ctx.message.author.id)
-                await ctx.send("Возраст подтвержден. Хорошей игры.")
+            try:
+                current_state = db.get_if_age_confirmed(ctx.message.author.id)
+            except db.AgeNotConfirmed:
+                current_state = False
+
+            if current_state:
+                await ctx.send(plr_age_confirmation_already)
                 ctx.command.reset_cooldown(ctx)
             else:
-                await ctx.send("Не удалось подтвердить возраст. Не подтверждаю.")
+                result = await inter.age_confirmation(self, ctx)
+                if result is True:
+                    db.confirm_age(ctx.message.author.id)
+                    await ctx.send("Возраст подтвержден. Хорошей игры.")
+                    ctx.command.reset_cooldown(ctx)
+                else:
+                    await ctx.send("Не удалось подтвердить возраст. Не подтверждаю.")
 
     @commands.command(name="персонажи")
     @commands.guild_only()

@@ -10,6 +10,7 @@ admin_role = config["Discord"].getint("admin_role_id")
 owner_id = config["Discord"].getint("owner_id")
 player_role_id = config["Discord"].getint("player_role_id")
 timeout = config["Discord"].getfloat("timeout_max_time")
+age_confirmation_categories = config["Discord"]["age_confirmation_categories"].split(",")
 
 db_address = config["Database"]["address"]
 
