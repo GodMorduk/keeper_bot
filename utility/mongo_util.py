@@ -83,7 +83,7 @@ def get_dominating_tide(tides_dict):
 
 def beautify_char_stats(stats):
     est = stats["special_stats"]["est"]
-    left_est = est - mng.count_all_attrs(stats) + mng.count_all_skills(stats)
+    left_est = est - (mng.count_all_attrs(stats) + mng.count_all_skills(stats))
 
     embed = discord.Embed()
 
