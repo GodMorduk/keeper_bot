@@ -92,6 +92,7 @@ def create_new_character(name, discord_id, est=60):
         "special_stats": {
             "est": est,
             "ord": 0,
+            "extra_attr_points": 0,
             "extra_perk_points": 0
         },
         "tides": {
@@ -111,7 +112,7 @@ def create_new_character(name, discord_id, est=60):
     add(new_char_dict)
 
 
-def count_all_stats(entry):
+def count_all_skills(entry):
     all_skills = entry["skills"].values()
     est_cost = 0
     for skill in all_skills:
@@ -121,11 +122,16 @@ def count_all_stats(entry):
             est_cost += 7
         elif skill == 3:
             est_cost += 12
-    return sum(entry["attributes"].values()) + est_cost
+    return est_cost
+
+
+def count_all_attrs(entry):
+    return sum(entry["attributes"].values())
 
 
 def change_stat(mongo_entry, category, name, modifier):
     est = mongo_entry["special_stats"]["est"]
+    ext_ext = mongo_entry["special_stats"]["extra_attr_points"] + mongo_entry["special_stats"]["extra_perk_points"]
 
     if modifier.startswith("-"):
         raise NotAllowedStatLowering
@@ -166,7 +172,7 @@ def change_stat(mongo_entry, category, name, modifier):
     else:
         raise NotAStat
 
-    if est - count_all_stats(mongo_entry) < 0:
+    if (est + ext_ext) - (count_all_skills(mongo_entry) + count_all_attrs(mongo_entry)) < 0:
         raise NotEnoughEst
 
     string = category + "." + name
