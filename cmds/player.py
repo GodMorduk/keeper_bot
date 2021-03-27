@@ -75,7 +75,7 @@ class PlayerCog(commands.Cog):
                         inline=False)
         embed.add_field(name=f"{prefix}статы",
                         value="**Описание:** интерактивная команда. Вбейте ее и делайте согласно подсказкам. Можно "
-                              "вбивать сразу полностью, если вы и так знаете, что писать.\n"
+                              "вбивать сразу полностью, если вы и так знаете, что писать."
                               f"\n**Формат:** команда\n**Пример:**  `{prefix}статы`",
                         inline=False)
         await ctx.send(embed=embed)
@@ -265,7 +265,6 @@ class PlayerCog(commands.Cog):
                 await ctx.send(f"Теперь {ctg_rus} {name_rus} равен {mng.change_stat(stats, ctg, name, mod)}.")
 
     @commands.command(name="сгенерироватьпароль")
-    @commands.guild_only()
     async def gen_password(self, ctx, *args):
         await ctx.send(f"Сгенерированный пароль: `{pswd.generate_password()}`")
 

@@ -161,6 +161,8 @@ def change_stat(mongo_entry, category, name, modifier):
             mongo_entry[category][name] = modifier
             if modifier > 3:
                 raise StatLimit
+    elif category == "efforts":
+        pass
     else:
         raise NotAStat
 
