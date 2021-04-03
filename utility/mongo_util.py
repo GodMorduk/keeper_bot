@@ -46,7 +46,7 @@ dict_attrs = {
     "выносливость": "end",
     "рефлексы": "ref",
     "ловкость": "agi",
-    "удача": "luck"
+    "удача": "lck"
 }
 
 dict_skills = {
@@ -58,9 +58,9 @@ dict_skills = {
     "биология": "biology",
     "инженерия": "engineering",
     "исследование": "research",
-    "магия": "magic",
+    "магия": "sorcery",
     "кузнечество": "blacksmith",
-    "магичность": "magical"
+    "магичность": "magic"
 }
 
 dict_efforts = {
@@ -93,12 +93,12 @@ def beautify_char_stats(stats):
                         f'**Свободно эститенции:** {left_est}\n'
 
     embed.add_field(name="Атрибуты:",
-                    value=f'Сила: {stats["attributes"]["STR"]}\n'
-                          f'Восприятие: {stats["attributes"]["PER"]}\n'
-                          f'Выносливость: {stats["attributes"]["END"]}\n'
-                          f'Рефлексы: {stats["attributes"]["REF"]}\n'
-                          f'Ловкость: {stats["attributes"]["AGI"]}\n'
-                          f'Удача: {stats["attributes"]["LUCK"]}\n',
+                    value=f'Сила: {stats["attributes"]["str"]}\n'
+                          f'Восприятие: {stats["attributes"]["per"]}\n'
+                          f'Выносливость: {stats["attributes"]["end"]}\n'
+                          f'Рефлексы: {stats["attributes"]["ref"]}\n'
+                          f'Ловкость: {stats["attributes"]["agi"]}\n'
+                          f'Удача: {stats["attributes"]["lck"]}\n',
                     inline=True)
     embed.add_field(name="Потоки:",
                     value=f'Красный: {stats["tides"]["red"]}\n'
@@ -115,19 +115,19 @@ def beautify_char_stats(stats):
                           f'Репутация: {stats["efforts"]["reputation"]}\n',
                     inline=True)
     embed.add_field(name="Навыки:",
-                    value=f'Психология: {stats["skills"]["Psychology"]}\n'
-                          f'Управление: {stats["skills"]["Management"]}\n'
-                          f'Воровство: {stats["skills"]["Thievery"]}\n'
-                          f'Выживание: {stats["skills"]["Survival"]}\n'
-                          f'Работа: {stats["skills"]["Hardworking"]}\n'
-                          f'Биология: {stats["skills"]["Biology"]}\n',
+                    value=f'Психология: {stats["skills"]["psychology"]}\n'
+                          f'Управление: {stats["skills"]["management"]}\n'
+                          f'Воровство: {stats["skills"]["thievery"]}\n'
+                          f'Выживание: {stats["skills"]["survival"]}\n'
+                          f'Работа: {stats["skills"]["hardworking"]}\n'
+                          f'Биология: {stats["skills"]["biology"]}\n',
                     inline=True)
     embed.add_field(name="\u200b",
-                    value=f'Инженерия: {stats["skills"]["Engineering"]}\n'
-                          f'Магия: {stats["skills"]["Magic"]}\n'
-                          f'Исследование: {stats["skills"]["Research"]}\n'
-                          f'Кузнечество: {stats["skills"]["Blacksmith"]}\n'
-                          f'Магичность: {stats["skills"]["Magical"]}\n',
+                    value=f'Инженерия: {stats["skills"]["engineering"]}\n'
+                          f'Магия: {stats["skills"]["sorcery"]}\n'
+                          f'Исследование: {stats["skills"]["research"]}\n'
+                          f'Кузнечество: {stats["skills"]["blacksmith"]}\n'
+                          f'Магичность: {stats["skills"]["magic"]}\n',
                     inline=True)
     return embed
 
