@@ -92,6 +92,7 @@ def create_new_character(name, discord_id, est=60):
         "special_stats": {
             "est": est,
             "ord": 0,
+            "seal": 0,
             "extra_attr_points": 0,
             "extra_perk_points": 0
         },
@@ -99,11 +100,11 @@ def create_new_character(name, discord_id, est=60):
             "red": 0, "blue": 0, "indigo": 0, "gold": 0, "silver": 0
         },
         "attributes": {
-            "STR": 0, "PER": 0, "END": 0, "REF": 0, "AGI": 0, "LUCK": 0
+            "str": 0, "per": 0, "end": 0, "ref": 0, "agi": 0, "lck": 0
         },
         "skills": {
-            "Psychology": 0, "Management": 0, "Thievery": 0, "Survival": 0, "Hardworking": 0, "Biology": 0,
-            "Engineering": 0, "Magic": 0, "Research": 0, "Blacksmith": 0, "Magical": 0
+            "psychology": 0, "management": 0, "thievery": 0, "survival": 0, "hardworking": 0, "biology": 0,
+            "engineering": 0, "sorcery": 0, "research": 0, "blacksmith": 0, "magic": 0
         },
         "efforts": {
             "impact": 0, "knowledge": 0, "reflection": 0, "confidence": 0, "reputation": 0

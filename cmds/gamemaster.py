@@ -195,6 +195,19 @@ class GameMasterCog(commands.Cog):
         mng.create_new_character(char_name, discord_user)
         await ctx.send("Персонаж успешно обнулен.")
 
+    @commands.command(name="обнулитьвсехперсонажей")
+    @commands.guild_only()
+    @commands.has_any_role(config_values.admin_role)
+    async def reset_all_char_stats(self, ctx):
+        all_chars = mng.get({}, multiple=True)
+        for char in all_chars:
+            discord_user = char["discord_user"]
+            char_name = char["character"]
+            mng.delete({"character": char_name})
+            mng.create_new_character(char_name, discord_user)
+            await ctx.send("Персонаж " + str(char_name) + " успешно пересоздан.")
+
+
     @commands.command(name="создатьперсонажа")
     @commands.guild_only()
     @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
