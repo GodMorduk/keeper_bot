@@ -66,7 +66,7 @@ class PlayerCog(commands.Cog):
                         inline=False)
         embed.add_field(name=f"{prefix}персонаж",
                         value="**Описание:** выводит всю информацию о персонаже. "
-                              f"Работает только в личке.\n**Формат:** команда, затем имя персонажа\n"
+                              f"\n**Формат:** команда, затем имя персонажа\n"
                               f"**Пример:**  `{prefix}персонаж John`",
                         inline=False)
         embed.add_field(name=f"{prefix}параметры",
