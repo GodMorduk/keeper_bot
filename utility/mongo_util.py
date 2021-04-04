@@ -161,7 +161,8 @@ def beautify_citizen_info(citizen):
     rewards = citizen["rewards"].items()
     if rewards:
         for reward in rewards:
-            output += reward[0] + ": " + str(reward[1]) + "\n"
+            if reward[1] != 0:
+                output += reward[0] + ": " + str(reward[1]) + "\n"
         embed.add_field(name="Награды:",
                         value=output,
                         inline=True)
