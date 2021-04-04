@@ -10,6 +10,7 @@ db = pymongo.MongoClient(config_values.db_address,
                          port=config_values.mongodb_port)
 
 col = db.characters.characters
+us_col = db.characters.social_credit
 
 
 class NotAStat(Exception):
@@ -54,34 +55,34 @@ def exception_mongo_handler_decorator(func):
     return exception_mongo_handler_wrapper
 
 
-def add(data, multiple=False):
+def add(data, collection=col, multiple=False):
     if multiple:
-        col.insert(data)
+        collection.insert(data)
     else:
-        col.insert_one(data)
+        collection.insert_one(data)
 
 
-def get(data, multiple=False):
+def get(data, collection=col, multiple=False):
     if multiple:
-        results = col.find(data)
+        results = collection.find(data)
         return results
     else:
-        return col.find_one(data)
+        return collection.find_one(data)
 
 
-def delete(data, multiple=False):
+def delete(data, collection=col, multiple=False):
     if multiple:
-        col.delete(data)
+        collection.delete(data)
     else:
-        col.delete_one(data)
+        collection.delete_one(data)
 
 
-def update(entry_id, new_values):
-    col.update_one({'_id': entry_id}, {'$set': new_values})
+def update(entry_id, new_values, collection=col):
+    collection.update_one({'_id': entry_id}, {'$set': new_values})
 
 
-def update_char(char_entry):
-    col.update_one({"_id": char_entry["_id"]}, {"$set": char_entry})
+def update_char(char_entry, collection=col):
+    collection.update_one({"_id": char_entry["_id"]}, {"$set": char_entry})
 
 
 def create_new_character(name, discord_id, est=60):
@@ -215,3 +216,50 @@ def change_stat_gm(mongo_entry, category, name, modifier):
     string = category + "." + name
     col.update_one({"_id": mongo_entry["_id"]}, {f"{action}": {f"{string}": int(modifier)}})
     return get({"_id": mongo_entry["_id"]})[category][name]
+
+
+# Раздел социального рейтинга
+
+def social_credit_changer(discord_id, amount):
+    discord_id = str(discord_id)
+
+    result = get({"discord_id": discord_id}, us_col)
+    if not result:
+        add({"discord_id": discord_id, "social_credit": 0, "rewards": {}}, us_col)
+        result = get({"discord_id": discord_id}, us_col)
+
+    is_increment = str(amount).startswith(("+", "-"))
+    if is_increment is True:
+        action = "$inc"
+    else:
+        action = "$set"
+
+    us_col.update_one({"_id": result["_id"]}, {f"{action}": {"social_credit": int(amount)}})
+
+
+def reward_changer(discord_id, reward, amount):
+    discord_id = str(discord_id)
+
+    result = get({"discord_id": discord_id}, us_col)
+    if not result:
+        add({"discord_id": discord_id, "social_credit": 0, "rewards": {}}, us_col)
+        result = get({"discord_id": discord_id}, us_col)
+
+    is_increment = str(amount).startswith(("+", "-"))
+    if is_increment is True:
+        action = "$inc"
+    else:
+        action = "$set"
+
+    string = "rewards" + "." + reward
+    us_col.update_one({"_id": result["_id"]}, {f"{action}": {f"{string}": int(amount)}})
+
+
+def get_citizen_info(discord_id):
+    discord_id = str(discord_id)
+    result = get({"discord_id": discord_id}, us_col)
+    if not result:
+        return None
+    else:
+        return result
+

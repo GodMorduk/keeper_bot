@@ -8,8 +8,8 @@ import handlers.mongo_handler as mng
 stats_list_for_players = [
     "атрибут сила", "атрибут восприятие", "атрибут выносливость", "атрибут рефлексы", "атрибут ловкость",
     "атрибут удача", "навык психология", "навык управление", "навык воровство", "навык выживание", "навык работа",
-    "навык биология", "навык инженерия", "навык магия", "навык исследование", "навык оружейничество",
-    "навык кузнечество", "навык магичность"
+    "навык биология", "навык инженерия", "навык колдовство", "навык исследование",
+    "навык кузнечество", "навык магия"
 ]
 
 stats_list_for_gms = [
@@ -58,9 +58,9 @@ dict_skills = {
     "биология": "biology",
     "инженерия": "engineering",
     "исследование": "research",
-    "магия": "sorcery",
+    "колдовство": "sorcery",
     "кузнечество": "blacksmith",
-    "магичность": "magic"
+    "магия": "magic"
 }
 
 dict_efforts = {
@@ -124,10 +124,10 @@ def beautify_char_stats(stats):
                     inline=True)
     embed.add_field(name="\u200b",
                     value=f'Инженерия: {stats["skills"]["engineering"]}\n'
-                          f'Магия: {stats["skills"]["sorcery"]}\n'
+                          f'Колдовство: {stats["skills"]["sorcery"]}\n'
                           f'Исследование: {stats["skills"]["research"]}\n'
                           f'Кузнечество: {stats["skills"]["blacksmith"]}\n'
-                          f'Магичность: {stats["skills"]["magic"]}\n',
+                          f'Магия: {stats["skills"]["magic"]}\n',
                     inline=True)
     return embed
 
@@ -148,3 +148,24 @@ def beautify_output_stats_names():
                     value=output,
                     inline=True)
     return embed
+
+
+def beautify_citizen_info(citizen):
+    embed = discord.Embed()
+    embed.colour = discord.Colour.dark_red()
+    output = ""
+    embed.title = "Гражданин номер " + citizen["discord_id"]
+    embed.add_field(name="Социальный кредит:",
+                    value=citizen["social_credit"],
+                    inline=True)
+    rewards = citizen["rewards"].items()
+    if rewards:
+        for reward in rewards:
+            output += reward[0] + ": " + str(reward[1]) + "\n"
+        embed.add_field(name="Награды:",
+                        value=output,
+                        inline=True)
+    return embed
+
+
+from handlers.mongo_handler import get_citizen_info
