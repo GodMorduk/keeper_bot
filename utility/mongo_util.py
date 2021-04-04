@@ -153,16 +153,17 @@ def beautify_output_stats_names():
 def beautify_citizen_info(citizen):
     embed = discord.Embed()
     embed.colour = discord.Colour.dark_red()
-    output = ""
     embed.title = "Гражданин номер " + citizen["discord_id"]
     embed.add_field(name="Социальный кредит:",
                     value=citizen["social_credit"],
                     inline=True)
+    output = ""
     rewards = citizen["rewards"].items()
-    if rewards:
-        for reward in rewards:
-            if reward[1] != 0:
-                output += reward[0] + ": " + str(reward[1]) + "\n"
+    for reward in rewards:
+        if reward[1] != 0:
+            output += reward[0] + ": " + str(reward[1]) + "\n"
+
+    if output:
         embed.add_field(name="Награды:",
                         value=output,
                         inline=True)
