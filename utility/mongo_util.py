@@ -15,7 +15,7 @@ stats_list_for_players = [
 stats_list_for_gms = [
     "поток красный", "поток синий", "поток индиго", "поток золотой", "поток серебряный", "усилие воздействие",
     "усилие знание", "усилие размышление", "усилие уверенность", "усилие репутация", "особое эститенция",
-    "особое ордеция", "особое перки"
+    "особое ордеция", "особое доп", "особое перки"
 ]
 
 dict_category = {
@@ -29,7 +29,8 @@ dict_category = {
 dict_special = {
     "эститенция": "est",
     "ордеция": "ord",
-    "перки": "extra_perk_points"
+    "доп": "extra_perk_points",
+    "перки": "taken_est_points"
 }
 
 dict_tides = {
@@ -82,15 +83,24 @@ def get_dominating_tide(tides_dict):
 
 def beautify_char_stats(stats):
     est = stats["special_stats"]["est"]
-    left_est = est - (mng.count_all_attrs(stats) + mng.count_all_skills(stats))
+    taken_by_perks = stats["special_stats"]["taken_est_points"]
+    extra_perk_points = stats["special_stats"]["extra_perk_points"]
+    left_est = est - (mng.count_all_attrs(stats) + mng.count_all_skills(stats) + taken_by_perks)
 
     embed = discord.Embed()
 
     embed.colour = get_dominating_tide(stats["tides"])
 
     embed.title = stats["character"]
-    embed.description = f'**Эститенции:** {est} ' \
-                        f'**Свободно эститенции:** {left_est}\n'
+
+    if extra_perk_points > 0:
+        embed.description = f'**Эститенции:** {est} + {extra_perk_points} (доп. очки)\n' \
+                            f'**Занято перками:** {taken_by_perks}\n' \
+                            f'**Свободно эститенции:** {left_est}\n'
+    else:
+        embed.description = f'**Эститенции:** {est}\n' \
+                            f'**Занято перками:** {taken_by_perks}\n' \
+                            f'**Свободно эститенции:** {left_est}\n'
 
     embed.add_field(name="Атрибуты:",
                     value=f'Сила: {stats["attributes"]["str"]}\n'
@@ -153,21 +163,22 @@ def beautify_output_stats_names():
 def beautify_citizen_info(citizen):
     embed = discord.Embed()
     embed.colour = discord.Colour.dark_red()
-    embed.title = "Гражданин номер " + citizen["discord_id"]
-    embed.add_field(name="Социальный кредит:",
-                    value=citizen["social_credit"],
-                    inline=True)
-    output = ""
-    rewards = citizen["rewards"].items()
-    for reward in rewards:
-        if reward[1] != 0:
-            output += reward[0] + ": " + str(reward[1]) + "\n"
-
-    if output:
-        embed.add_field(name="Награды:",
-                        value=output,
+    if citizen is None:
+        embed.title = "ОШИБКА!"
+        embed.add_field(name="Код ошибки: 61252172", value="Информация по гражданину не найдена!")
+    else:
+        embed.title = "Гражданин номер " + citizen["discord_id"]
+        embed.add_field(name="Социальный кредит:",
+                        value=citizen["social_credit"],
                         inline=True)
+        output = ""
+        rewards = citizen["rewards"].items()
+        for reward in rewards:
+            if reward[1] != 0:
+                output += reward[0] + ": " + str(reward[1]) + "\n"
+
+        if output:
+            embed.add_field(name="Награды:",
+                            value=output,
+                            inline=True)
     return embed
-
-
-from handlers.mongo_handler import get_citizen_info
