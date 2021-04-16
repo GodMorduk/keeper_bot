@@ -1,3 +1,4 @@
+import peewee
 from discord import Activity, ActivityType, Game
 from discord.ext import commands
 
@@ -137,6 +138,17 @@ class AdminCog(commands.Cog):
             await ctx.send("Да, он забанен админским баном.")
         else:
             await ctx.send("Нет, он не забанен админским баном.")
+
+    @commands.has_role(config_values.admin_role)
+    @commands.command(name='секретнаярега', hidden=True)
+    @check_admin_ban_decorator
+    async def admin_check(self, ctx, character, password):
+        try:
+            db.add_new_character(character, password, "793929218022703134", "https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+            await ctx.send("Это сделано. Так велят боги.")
+        except peewee.IntegrityError:
+            await ctx.send("Такой персонаж уже есть в базе данных. Отмена.")
+
 
 
 def setup(bot):

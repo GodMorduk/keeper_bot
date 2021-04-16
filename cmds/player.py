@@ -200,7 +200,7 @@ class PlayerCog(commands.Cog):
 
         if action == "залить":
             character = await inter.check_char(self, ctx, plr_skin_char_tooltip, plr_skin_char_error, subject)
-            postfix = await inter.input_raw_text_no_checks(self, ctx, plr_skin_postfix_tooltip, postfix)
+            postfix = await inter.input_raw_text_ascii(self, ctx, plr_skin_postfix_tooltip, forbidden_chars, postfix)
             msg = await inter.msg_with_attachment(self, ctx, plr_skin_att_tooltip, plr_skin_att_error, attach_msg)
             await util.upload_skin(ctx, character, postfix, msg)
         elif action == "получить":
@@ -217,18 +217,15 @@ class PlayerCog(commands.Cog):
             await util.skins_eraser(ctx, subject)
 
     @commands.command(name="персонаж")
-    @commands.guild_only()
     async def print_char_stats(self, ctx, character):
         stats_dict = mng.get({"character": character})
         await ctx.send(embed=mng_util.beautify_char_stats(stats_dict))
 
     @commands.command(name="параметры")
-    @commands.guild_only()
     async def print_all_parameters(self, ctx):
         await ctx.send(embed=mng_util.beautify_output_stats_names())
 
     @commands.command(name="статы")
-    @commands.guild_only()
     @inter.exception_handler_decorator
     @mng.exception_mongo_handler_decorator
     async def change_char_stats(self, ctx, *args):
