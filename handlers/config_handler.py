@@ -18,7 +18,7 @@ def create_config(path):
     config["Discord"]["timeout_max_time"] = "enter interactive commands max timeout"
     config["Discord"][""] = "enter categories (split by comma) where age can be confirmed"
     config.add_section("Database")
-    config["MySQL"]["address"] = "localhost"
+    config["Database"]["address"] = "localhost"
     config.add_section("MySQL")
     config["MySQL"]["username"] = "mysql username"
     config["MySQL"]["password"] = "mysql password"

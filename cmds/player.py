@@ -15,6 +15,37 @@ from lines import *
 from utility.discord_util import user_converter
 
 
+def count_learning_cost(already_learned):
+    tens = already_learned // 10
+    numbers = already_learned % 10
+    price = 0
+
+    if tens > 0:
+        for i in range(tens):
+            price += 10 * (i + 1)
+        price += numbers * (tens + 1)
+        return price
+    else:
+        return numbers
+
+
+def count_price(now, need):
+    total_price = 0
+
+    for i in range(now + 1, need + 1):
+        tens = i // 10
+        numbers = i % 10
+        if numbers == 0:
+            tens -= 1
+
+        if tens < 1:
+            total_price += 1
+        else:
+            total_price += (tens + 1)
+
+    return total_price
+
+
 class PlayerCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -246,7 +277,7 @@ class PlayerCog(commands.Cog):
         character = await inter.user_or_pass(self, ctx, 15, stats_char_tooltip, gm_int_reg_char_error, character)
         ctg_rus, ctg = await inter.input_char_category(self, ctx, stats_category_tooltip, stats_category_error, ctg)
         name_rus, name = await inter.input_char_stat(self, ctx, stats_name_tooltip, stats_name_error, ctg, name)
-        mod = await inter.input_stat_number(self, ctx, stats_mod_tooltip, stats_mod_error, mod)
+        mod = await inter.input_number_only(self, ctx, stats_mod_tooltip, stats_mod_error, mod)
 
         stats = mng.get({"character": character})
 
@@ -264,6 +295,32 @@ class PlayerCog(commands.Cog):
     @commands.command(name="сгенерироватьпароль")
     async def gen_password(self, ctx, *args):
         await ctx.send(f"Сгенерированный пароль: `{pswd.generate_password()}`")
+
+    @commands.command(name="обучение")
+    @inter.exception_handler_decorator
+    @mng.exception_mongo_handler_decorator
+    async def learning_helper(self, ctx, *args):
+
+        cost_of_what_needed = await inter.input_number_only(self, ctx, learning_tip_cost, learning_error)
+        total_perks_already = await inter.input_number_only(self, ctx, learning_total_perks, learning_error)
+        total_learned_already = await inter.input_number_only(self, ctx, learning_total_learned, learning_error)
+
+        # сделать нормальную проверку на уровне inter функции
+        if cost_of_what_needed < 0 or total_perks_already < 0 or total_learned_already < 0:
+            await ctx.send("Чето тут меньше нуля. Иди в жопу.")
+        else:
+            current_max_learning = count_learning_cost(total_learned_already)
+            needed_max_learning = count_learning_cost(total_learned_already + cost_of_what_needed)
+            time_would_take = max(7, total_learned_already + total_perks_already)
+            tides_or_seals = count_price(current_max_learning, needed_max_learning)
+
+            await ctx.send(f"Итак, если ты действительно научился всему на {total_learned_already}, то твоя текущая "
+                           f"фактическая обученность равна {current_max_learning}.\nТы хочешь научиться чему-то на "
+                           f"{cost_of_what_needed}, а значит, тебе нужно, чтобы твоя максимальная обученность была "
+                           f"{needed_max_learning}. То есть тебе нужно поднять ее на  "
+                           f"{needed_max_learning - current_max_learning}.\nНа это все дело тебе нужно "
+                           f"{tides_or_seals} печатей или потоков. И по времени это займет {time_would_take} "
+                           f"дней, кстати.")
 
 
 def setup(bot):
