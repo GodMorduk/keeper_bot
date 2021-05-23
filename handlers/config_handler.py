@@ -12,6 +12,8 @@ def create_config(path):
     config["Discord"]["prefix"] = "enter your prefix, i.e \"!\""
     config["Discord"]["registrar_role_id"] = "enter id here"
     config["Discord"]["wiki-registrar_role_id"] = "enter id here"
+    config["Discord"]["gm_role"] = "enter id here"
+    config["Discord"]["tech_gm_role"] = "enter id here"
     config["Discord"]["admin_role_id"] = "enter admin group id"
     config["Discord"]["owner_id"] = "enter owner id here"
     config["Discord"]["player_role_id"] = "enter player role id here"

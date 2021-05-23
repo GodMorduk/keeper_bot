@@ -10,7 +10,7 @@ import utility.password_util as pswd
 import utility.player_util as util
 from cmds.admin import check_admin_ban_decorator
 from config_values import prefix, dir_launcher, launcher_name, bot_name, bot_genitive_name, registrar_role, admin_role, \
-    age_confirmation_categories
+    age_confirmation_categories, tech_gm_role, gm_role
 from lines import *
 from utility.discord_util import user_converter
 
@@ -281,7 +281,7 @@ class PlayerCog(commands.Cog):
 
         stats = mng.get({"character": character})
 
-        if any(x in [r.id for r in ctx.author.roles] for x in [registrar_role, admin_role]):
+        if any(x in [r.id for r in ctx.author.roles] for x in [registrar_role, admin_role, gm_role, tech_gm_role]):
             if ctg_rus == "особое":
                 await ctx.send(f"Теперь {name_rus} {mng.change_stat_gm(stats, ctg, name, mod)}.")
             else:
