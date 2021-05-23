@@ -212,7 +212,10 @@ class GameMasterCog(commands.Cog):
     @commands.guild_only()
     @commands.has_any_role(config_values.registrar_role, config_values.admin_role)
     async def create_char_stats(self, ctx, char_name, discord_id):
-        mng.create_new_character(char_name, discord_id)
+
+        user_id = await inter.discord_user_get_id(self, ctx, point_on_user, gm_int_reg_user_error, discord_id)
+
+        mng.create_new_character(char_name, user_id)
         await ctx.send("Персонаж успешно создан.")
 
     @commands.command(name="удалитьперсонажа")
