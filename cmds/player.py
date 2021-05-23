@@ -309,18 +309,16 @@ class PlayerCog(commands.Cog):
         if cost_of_what_needed < 0 or total_perks_already < 0 or total_learned_already < 0:
             await ctx.send("Чето тут меньше нуля. Иди в жопу.")
         else:
-            current_max_learning = count_learning_cost(total_learned_already)
-            needed_max_learning = count_learning_cost(total_learned_already + cost_of_what_needed)
+            current_points_used = count_learning_cost(total_learned_already)
+            # needed_points_used = count_learning_cost(total_learned_already + cost_of_what_needed)
             time_would_take = max(7, total_learned_already + total_perks_already)
-            tides_or_seals = count_price(current_max_learning, needed_max_learning)
+            tides_or_seals = count_price(total_learned_already, total_learned_already + cost_of_what_needed)
 
-            await ctx.send(f"Итак, если ты действительно научился всему на {total_learned_already}, то твоя текущая "
-                           f"фактическая обученность равна {current_max_learning}.\nТы хочешь научиться чему-то на "
+            await ctx.send(f"Твоя текущая фактическая обученность равна {total_learned_already}. На это ты уже потратил"
+                           f" {current_points_used} печатей или потоков. \nТы хочешь научиться чему-то на "
                            f"{cost_of_what_needed}, а значит, тебе нужно, чтобы твоя максимальная обученность была "
-                           f"{needed_max_learning}. То есть тебе нужно поднять ее на  "
-                           f"{needed_max_learning - current_max_learning}.\nНа это все дело тебе нужно "
-                           f"{tides_or_seals} печатей или потоков. И по времени это займет {time_would_take} "
-                           f"дней, кстати.")
+                           f"{total_learned_already + cost_of_what_needed}.\nНа это тебе нужно **{tides_or_seals}** "
+                           f"печатей или потоков. И по времени это займет **{time_would_take}** дней.")
 
 
 def setup(bot):

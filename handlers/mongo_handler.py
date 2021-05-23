@@ -94,6 +94,7 @@ def create_new_character(name, discord_id, est=60):
             "est": est,
             "ord": 0,
             "seal": 0,
+            "mark": 0,
             "extra_attr_points": 0,
             "extra_perk_points": 0,
             "taken_est_points": 0

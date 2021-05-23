@@ -15,7 +15,7 @@ stats_list_for_players = [
 stats_list_for_gms = [
     "поток красный", "поток синий", "поток индиго", "поток золотой", "поток серебряный", "усилие воздействие",
     "усилие знание", "усилие размышление", "усилие уверенность", "усилие репутация", "особое эститенция",
-    "особое ордеция", "особое доп", "особое перки"
+    "особое ордеция", "особое доп", "особое перки", "особое метки"
 ]
 
 dict_category = {
@@ -30,7 +30,8 @@ dict_special = {
     "эститенция": "est",
     "ордеция": "ord",
     "доп": "extra_perk_points",
-    "перки": "taken_est_points"
+    "перки": "taken_est_points",
+    "метки": "mark"
 }
 
 dict_tides = {
@@ -85,6 +86,7 @@ def beautify_char_stats(stats):
     est = stats["special_stats"]["est"]
     taken_by_perks = stats["special_stats"]["taken_est_points"]
     extra_perk_points = stats["special_stats"]["extra_perk_points"]
+    marks = stats["special_stats"]["mark"]
     left_est = est - (mng.count_all_attrs(stats) + mng.count_all_skills(stats) + taken_by_perks)
 
     embed = discord.Embed()
@@ -96,11 +98,13 @@ def beautify_char_stats(stats):
     if extra_perk_points > 0:
         embed.description = f'**Эститенции:** {est} + {extra_perk_points} (доп. очки)\n' \
                             f'**Занято перками:** {taken_by_perks}\n' \
-                            f'**Свободно эститенции:** {left_est}\n'
+                            f'**Свободно эститенции:** {left_est}\n' \
+                            f'**Меток:** {marks}\n'
     else:
         embed.description = f'**Эститенции:** {est}\n' \
                             f'**Занято перками:** {taken_by_perks}\n' \
-                            f'**Свободно эститенции:** {left_est}\n'
+                            f'**Свободно эститенции:** {left_est}\n' \
+                            f'**Меток:** {marks}\n'
 
     embed.add_field(name="Атрибуты:",
                     value=f'Сила: {stats["attributes"]["str"]}\n'
