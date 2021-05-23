@@ -290,14 +290,18 @@ async def input_char_stat(check, self, ctx, tip_text, error_text, category, subj
 
 
 @do_check_decorator
-async def input_number_only(check, self, ctx, tip_text, error_text, subject=None):
+async def input_number_only(check, self, ctx, tip_text, error_text, subject=None, return_as_int=False):
     if not subject:
         await ctx.send(tip_text)
     while True:
         if not subject:
             subject = await get_subject_if_none(self, check)
         try:
-            return int(subject)
+            int_subject = int(subject)
+            if return_as_int:
+                return int_subject
+            else:
+                return subject
 
         except ValueError:
             await ctx.send(error_text)

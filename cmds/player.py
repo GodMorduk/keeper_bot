@@ -301,9 +301,10 @@ class PlayerCog(commands.Cog):
     @mng.exception_mongo_handler_decorator
     async def learning_helper(self, ctx, *args):
 
-        cost_of_what_needed = await inter.input_number_only(self, ctx, learning_tip_cost, learning_error)
-        total_perks_already = await inter.input_number_only(self, ctx, learning_total_perks, learning_error)
-        total_learned_already = await inter.input_number_only(self, ctx, learning_total_learned, learning_error)
+        cost_of_what_needed = await inter.input_number_only(self, ctx, learning_tip_cost, learning_error, None, True)
+        total_perks_already = await inter.input_number_only(self, ctx, learning_total_perks, learning_error, None, True)
+        total_learned_already = await inter.input_number_only(self, ctx, learning_total_learned, learning_error, None,
+                                                              True)
 
         # сделать нормальную проверку на уровне inter функции
         if cost_of_what_needed < 0 or total_perks_already < 0 or total_learned_already < 0:
@@ -311,7 +312,7 @@ class PlayerCog(commands.Cog):
         else:
             current_points_used = count_learning_cost(total_learned_already)
             # needed_points_used = count_learning_cost(total_learned_already + cost_of_what_needed)
-            time_would_take = max(7, total_learned_already + total_perks_already)
+            time_would_take = max(7, total_learned_already + (total_perks_already * 2))
             tides_or_seals = count_price(total_learned_already, total_learned_already + cost_of_what_needed)
 
             await ctx.send(f"Твоя текущая фактическая обученность равна {total_learned_already}. На это ты уже потратил"
