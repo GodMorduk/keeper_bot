@@ -138,10 +138,10 @@ def change_stat(mongo_entry, category, name, modifier):
     ext_ext = mongo_entry["special_stats"]["extra_attr_points"] + mongo_entry["special_stats"]["extra_perk_points"]
     taken_by_perks = mongo_entry["special_stats"]["taken_est_points"]
 
-    if modifier.startswith("-"):
+    if str(modifier).startswith("-"):
         raise NotAllowedStatLowering
 
-    is_increment = modifier.startswith("+")
+    is_increment = str(modifier).startswith("+")
 
     modifier = int(modifier)
 
@@ -186,7 +186,7 @@ def change_stat(mongo_entry, category, name, modifier):
 
 
 def change_stat_gm(mongo_entry, category, name, modifier):
-    is_increment = modifier.startswith(("+", "-"))
+    is_increment = str(modifier).startswith(("+", "-"))
 
     if is_increment is True:
         action = "$inc"
