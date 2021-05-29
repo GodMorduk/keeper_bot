@@ -42,3 +42,7 @@ log_channel = config["Errors"].getint("log_channel_id")
 
 bot_name = config["Extra"]["bot_name"]
 bot_genitive_name = config["Extra"]["bot_genitive_name"]
+
+server_address = config["Server"]["address"]
+server_port = config["Server"].getint("port")
+online_delete_after = config["Server"].getint("online_delete_after")

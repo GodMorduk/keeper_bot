@@ -1,3 +1,6 @@
+import asyncio
+from random import randrange
+
 from discord import User, Embed, File
 from discord.ext import commands
 
@@ -10,9 +13,10 @@ import utility.password_util as pswd
 import utility.player_util as util
 from cmds.admin import check_admin_ban_decorator
 from config_values import prefix, dir_launcher, launcher_name, bot_name, bot_genitive_name, registrar_role, admin_role, \
-    age_confirmation_categories, tech_gm_role, gm_role
+    age_confirmation_categories, tech_gm_role, gm_role, server_port, server_address, online_delete_after
 from lines import *
 from utility.discord_util import user_converter
+from mcstatus import MinecraftServer
 
 
 def count_learning_cost(already_learned):
@@ -320,6 +324,44 @@ class PlayerCog(commands.Cog):
                            f"{cost_of_what_needed}, а значит, тебе нужно, чтобы твоя максимальная обученность была "
                            f"{total_learned_already + cost_of_what_needed}.\nНа это тебе нужно **{tides_or_seals}** "
                            f"печатей или потоков. И по времени это займет **{time_would_take}** дней.")
+
+    @commands.command(name="онлайн")
+    @inter.exception_handler_decorator
+    async def current_online(self, ctx, *args):
+
+        server = MinecraftServer(server_address, server_port)
+
+        query = server.query()
+        players_amount = len(query.players.names)
+        msg_joke = None
+        if players_amount == 0:
+            msg = await ctx.send(f'Никого нет!')
+            msg_joke = await ctx.send(f'!напохороны')
+            await asyncio.sleep(online_delete_after)
+            await ctx.message.delete()
+            await msg.delete()
+            await msg_joke.delete()
+        else:
+            if str(players_amount).endswith("1"):
+                word = "душа"
+            elif str(players_amount).endswith(("2", "3", "4")):
+                word = "души"
+            else:
+                word = "душ"
+            msg = await ctx.send(
+                f'Сейчас на Планах **{players_amount}** {word}:\n```{", ".join(query.players.names)}```'
+            )
+            if players_amount < 10:
+                secret = randrange(1, 11)
+                if secret == 5:
+                    msg_joke = await ctx.send(f'!напохороны')
+                elif secret == 7:
+                    msg_joke = await ctx.send(f'**Мертвый сервер!**')
+            await asyncio.sleep(online_delete_after)
+            await ctx.message.delete()
+            await msg.delete()
+            if msg_joke:
+                await msg_joke.delete()
 
 
 def setup(bot):

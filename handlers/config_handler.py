@@ -36,6 +36,10 @@ def create_config(path):
     config["Game"]["dir_launcher"] = "path to launcher file"
     config["Game"]["link_skins"] = "http link to skins website (and folder]"
     config["Game"]["launcher_name"] = "renamed launcher name"
+    config.add_section("Server")
+    config["Server"]["address"] = "server address here"
+    config["Server"]["port"] = "server port here"
+    config["Server"]["online_delete_after"] = "after how many seconds message should be deteled"
     config.add_section("MediaWiki")
     config["MediaWiki"]["url"] = "enter wiki url, like https://wiki.example.com/"
     config["MediaWiki"]["login"] = "bot login to Mediawiki"
