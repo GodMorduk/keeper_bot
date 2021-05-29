@@ -1,3 +1,4 @@
+import asyncio
 import re
 
 from discord import Embed
@@ -71,7 +72,11 @@ class DiscordUtil(commands.Cog):
                     await ctx.send("Ты сегодня уже неудачно подтверждал возраст. Попробуй завтра, может завтра "
                                    "повзрослеешь.")
                 else:
-                    await ctx.send(f'Воу-воу. Полегче. Эта команда пока на кулдауне.')
+                    msg = await ctx.send(f'Воу-воу. Полегче. Эта команда пока на кулдауне. Подожди еще '
+                                         f'{round(error.retry_after)} секунд.')
+                    await asyncio.sleep(config_values.timeout)
+                    await ctx.message.delete()
+                    await msg.delete()
 
     @commands.Cog.listener("on_message")
     async def show_help(self, msg):

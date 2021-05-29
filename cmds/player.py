@@ -326,6 +326,7 @@ class PlayerCog(commands.Cog):
                            f"печатей или потоков. И по времени это займет **{time_would_take}** дней.")
 
     @commands.command(name="онлайн")
+    @commands.cooldown(1, 600.0, commands.BucketType.user)
     @inter.exception_handler_decorator
     async def current_online(self, ctx, *args):
 
@@ -342,7 +343,9 @@ class PlayerCog(commands.Cog):
             await msg.delete()
             await msg_joke.delete()
         else:
-            if str(players_amount).endswith("1"):
+            if str(players_amount) in ("11", "12", "13", "14"):
+                word = "душ"
+            elif str(players_amount).endswith("1"):
                 word = "душа"
             elif str(players_amount).endswith(("2", "3", "4")):
                 word = "души"
@@ -351,7 +354,7 @@ class PlayerCog(commands.Cog):
             msg = await ctx.send(
                 f'Сейчас на Планах **{players_amount}** {word}:\n```{", ".join(query.players.names)}```'
             )
-            if players_amount < 10:
+            if players_amount < 20:
                 secret = randrange(1, 11)
                 if secret == 5:
                     msg_joke = await ctx.send(f'!напохороны')
